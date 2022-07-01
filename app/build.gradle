@@ -89,5 +89,4 @@ dependencies {
     // bitmap or vector image load
     implementation 'io.coil-kt:coil-compose:2.0.0'
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3"
 }
