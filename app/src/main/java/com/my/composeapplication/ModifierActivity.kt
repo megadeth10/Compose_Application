@@ -69,22 +69,4 @@ fun ModifierContent(list : List<String> = SampleData.nameSample) {
 @Composable
 fun ModifierPreview() {
     ModifierContent()
-//    Column {
-//        Row(verticalAlignment = CenterVertically, modifier = Modifier.height(70.dp)) {
-//            Text(
-//                text = "ModifierActivity",
-//                modifier = Modifier.fillMaxWidth().background(Color.Red),
-//                maxLines = 2,
-//
-//            )
-//        }
-//        Row {
-//            Text(
-//                text = "ModifierActivity",
-//                modifier = Modifier.fillMaxWidth().height(70.dp),
-//                textAlign = TextAlign.Center,
-//                maxLines = 2
-//            )
-//        }
-//    }
 }
