@@ -73,6 +73,8 @@ dependencies {
     implementation "androidx.compose.ui:ui-viewbinding:1.1.1"
     //preview ...
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    // compose ConstraintLayout
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$viewmodel_compose"
     // material icon
@@ -88,5 +90,4 @@ dependencies {
 
     // bitmap or vector image load
     implementation 'io.coil-kt:coil-compose:2.0.0'
-
 }

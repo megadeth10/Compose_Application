@@ -15,7 +15,7 @@
         android:theme="@style/Theme.ComposeApplication"
         tools:targetApi="31">
         <activity
-            android:name=".ModifierActivity"
+            android:name=".IntrinsicActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
