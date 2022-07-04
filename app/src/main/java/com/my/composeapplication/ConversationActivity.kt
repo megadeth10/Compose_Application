@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.data.Message
 import com.my.composeapplication.data.SampleData
 import com.my.composeapplication.ui.theme.ComposeApplicationTheme
@@ -42,12 +43,8 @@ import com.my.composeapplication.ui.theme.Red
 /**
  * Created by YourName on 2022/06/29.
  */
-class ConversationActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState : Bundle?) {
-        super.onCreate(savedInstanceState)
-        val compose = ComposeView(this).apply {
-            this.setContent {
-//                body()
+class ConversationActivity : BaseComponentActivity() {
+    override fun getContent() : @Composable () -> Unit = {
                 ListWithBug(myList = listOf(
                     "asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas",
                     "asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas",
@@ -140,12 +137,7 @@ class ConversationActivity : AppCompatActivity() {
                     "asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas",
                     "asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas",
                     "asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas","asdas",
-
-
                     ))
-            }
-        }
-        setContentView(compose)
     }
 }
 
@@ -249,7 +241,7 @@ fun NamePicker(
             items(names) { name ->
                 // When an item's [name] updates, the adapter for that item
                 // will recompose. This will not recompose when [header] changes
-                NamePickerItem(name, onNameClicked)
+                NamePickerItem(name = name, onClicked = onNameClicked)
             }
         }
     }
@@ -259,7 +251,7 @@ fun NamePicker(
  * Display a single name the user can click.
  */
 @Composable
-private fun NamePickerItem(name : String, onClicked : (String) -> Unit) {
+fun NamePickerItem(name : String, modifier : Modifier = Modifier, onClicked : (String) -> Unit) {
     Log.e(ConversationActivity::class.simpleName, "NamePickerItem()")
     Row(
         Modifier
@@ -267,7 +259,7 @@ private fun NamePickerItem(name : String, onClicked : (String) -> Unit) {
     ) {
         Text(
             name,
-            Modifier
+            modifier
                 .clickable(onClick = { onClicked(name) })
                 .fillMaxWidth(1.0f)
                 .padding(5.dp)
