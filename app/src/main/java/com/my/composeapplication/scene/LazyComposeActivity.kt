@@ -1,4 +1,4 @@
-package com.my.composeapplication
+package com.my.composeapplication.scene
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement

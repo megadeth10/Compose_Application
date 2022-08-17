@@ -1,4 +1,4 @@
-package com.my.composeapplication
+package com.my.composeapplication.scene
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

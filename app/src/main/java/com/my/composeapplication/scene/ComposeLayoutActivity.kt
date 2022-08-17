@@ -1,4 +1,4 @@
-package com.my.composeapplication
+package com.my.composeapplication.scene
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.my.composeapplication.R
 import com.my.composeapplication.ui.theme.Black
 import com.my.composeapplication.ui.theme.ComposeApplicationTheme
 import com.my.composeapplication.ui.theme.RED_POINT
@@ -125,6 +126,7 @@ fun LayoutsContent(modifier : Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PhotoTopAppBar() {
     ComposeApplicationTheme {

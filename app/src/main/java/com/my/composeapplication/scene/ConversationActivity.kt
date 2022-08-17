@@ -1,4 +1,4 @@
-package com.my.composeapplication
+package com.my.composeapplication.scene
 
 /** by 설정에 아래 2가지 import가 필요하다. */
 import android.content.Intent
@@ -34,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.my.composeapplication.R
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.data.Message
 import com.my.composeapplication.data.SampleData

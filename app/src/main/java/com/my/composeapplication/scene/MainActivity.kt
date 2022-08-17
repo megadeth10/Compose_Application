@@ -1,4 +1,4 @@
-package com.my.composeapplication
+package com.my.composeapplication.scene
 
 import android.os.Bundle
 import android.util.Log
@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Observer
 import com.my.composeapplication.databinding.ActivityMainBinding
+import com.my.composeapplication.fragment.MainFragment
 import com.my.composeapplication.ui.theme.ComposeApplicationTheme
 import com.my.composeapplication.ui.theme.White
 import com.my.composeapplication.viewmodel.ConversationViewModel

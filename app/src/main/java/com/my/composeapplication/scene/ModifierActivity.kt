@@ -1,13 +1,10 @@
-package com.my.composeapplication
+package com.my.composeapplication.scene
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.SmallTopAppBar
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
@@ -29,6 +26,7 @@ class ModifierActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = { ModifierContent() }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModifierContent(list : List<String> = SampleData.nameSample) {
     Column(modifier = Modifier.fillMaxWidth()) {

@@ -1,8 +1,7 @@
-package com.my.composeapplication
+package com.my.composeapplication.fragment
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
@@ -31,12 +29,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.findViewTreeLifecycleOwner
+import com.my.composeapplication.R
 import com.my.composeapplication.databinding.FragmentMainBinding
 import com.my.composeapplication.databinding.LayoutInputBinding
-import com.my.composeapplication.ui.theme.Black
+import com.my.composeapplication.scene.Greeting
 import com.my.composeapplication.ui.theme.ComposeApplicationTheme
 import com.my.composeapplication.ui.theme.Gray
-import com.my.composeapplication.ui.theme.Red
 import com.my.composeapplication.viewmodel.MainViewModel
 
 
@@ -126,6 +124,7 @@ fun HelloScreen() {
     HelloContent(name = name.value, onNameChange = { name.value = it })
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelloContent(name : String, onNameChange : (String) -> Unit) {
     Column(modifier = Modifier
