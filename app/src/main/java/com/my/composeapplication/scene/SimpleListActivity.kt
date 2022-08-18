@@ -22,8 +22,9 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import com.my.composeapplication.base.customScaffold
+import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
@@ -55,9 +56,16 @@ fun SimpleList() {
                 .height(0.dp)
                 .weight(1.0f)
         ) {
-            LazyColumn(state = scrollState) {
-                items(listSize) { item ->
-                    ImageListItem(item)
+            customScaffold(
+                topAppbar = {
+                    CustomTopAppBar("BIM Calculator")
+                }
+            ) {
+                LazyColumn(state = scrollState,
+                modifier = Modifier.padding(top = it.calculateTopPadding())) {
+                    items(listSize) { item ->
+                        ImageListItem(item)
+                    }
                 }
             }
         }
@@ -140,7 +148,9 @@ fun ImageListItem(
                 modifier = Modifier.size(50.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = "Item #$index",
@@ -149,7 +159,8 @@ fun ImageListItem(
                 IconButton(
                     modifier = Modifier
                         .width(30.dp)
-                        .height(30.dp).align(alignment = Alignment.CenterEnd),
+                        .height(30.dp)
+                        .align(alignment = Alignment.CenterEnd),
                     onClick = { fbClick(fbState) }
                 ) {
                     Icon(

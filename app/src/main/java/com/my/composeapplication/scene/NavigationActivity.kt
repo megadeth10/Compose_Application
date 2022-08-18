@@ -17,7 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.CustomScaffold
+import com.my.composeapplication.base.customScaffold
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -40,7 +40,7 @@ class NavigationActivity : BaseComponentActivity() {
 @Composable
 fun NavScreen() {
     val navController = rememberNavController()
-    snackbarHostState = CustomScaffold {
+    snackbarHostState = customScaffold {
         NavHost(navController = navController, startDestination = "first") {
             composable("first") {
                 FirstScreen(navController)

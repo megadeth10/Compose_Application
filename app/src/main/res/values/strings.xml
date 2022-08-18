@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Compose Application</string>
+    <string name="result">결과</string>
+    <string name="level1">비만</string>
+    <string name="level2">중비만</string>
+    <string name="level3">고도비만</string>
+    <string name="result_fail">결과 오류</string>
 </resources>

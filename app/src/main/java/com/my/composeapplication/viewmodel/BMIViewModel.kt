@@ -1,5 +1,8 @@
 package com.my.composeapplication.viewmodel
 
+import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,12 +14,16 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class BMIViewModel @Inject constructor() : ViewModel() {
-    private val _height : MutableLiveData<String> = MutableLiveData("")
-    val height : LiveData<String> = _height
+    private val _height = mutableStateOf<String>("")
+    val height : State<String> = _height
 
-    private val _weight : MutableLiveData<String> = MutableLiveData("")
-    val weight : LiveData<String> = _weight
+    private val _weight = mutableStateOf<String>("")
+    val weight : State<String> = _weight
 
+
+    init {
+        Log.e("BMIViewModel", "init() this: $this")
+    }
     /**
      * 키 설정
      */

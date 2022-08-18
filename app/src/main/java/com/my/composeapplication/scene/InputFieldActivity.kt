@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.CustomScaffold
+import com.my.composeapplication.base.customScaffold
 import com.my.composeapplication.ui.theme.ComposeApplicationTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,7 +48,7 @@ private fun InputFieldHoisting(initValue : String = "") {
     var textValue by rememberSaveable {
         mutableStateOf(initValue)
     }
-    snackbarHostState = CustomScaffold {
+    snackbarHostState = customScaffold {
         InputField(initValue = textValue) {
             textValue = it
         }
