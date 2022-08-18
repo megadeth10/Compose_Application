@@ -1,6 +1,7 @@
 package com.my.composeapplication.scene.bmi
 
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -39,13 +41,13 @@ private var snackbarHostState : SnackbarHostState? = null
 
 @AndroidEntryPoint
 class BMIActivity : BaseComponentActivity() {
+    private val viewModel by viewModels<BMIViewModel>()
     override fun getContent() : @Composable () -> Unit = {
         val navController = rememberNavController()
 
         NavHost(navController = navController, startDestination = "input") {
             composable("input") {
-                val viewModel : BMIViewModel by viewModels()
-                MainScreenHoisting(navController, viewModel)
+                MainScreenHoisting(navController)
                 CloseToastHoisting(snackbarHostState)
             }
             composable("result/{level}") {
@@ -58,7 +60,10 @@ class BMIActivity : BaseComponentActivity() {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun MainScreenHoisting(navController : NavHostController, viewModel : BMIViewModel = viewModel()) {
+private fun MainScreenHoisting(
+    navController : NavHostController,
+    viewModel : BMIViewModel = viewModel(LocalContext.current as ComponentActivity)
+) {
 //    val heightState = viewModel.height.observeAsState()
 //    val weightState = viewModel.weight.observeAsState()
     val heightState = viewModel.height.value.trim()
@@ -85,8 +90,6 @@ private fun MainScreenHoisting(navController : NavHostController, viewModel : BM
     MainScreen(
         height = heightState,
         weight = weightState,
-        setHeight = viewModel::setHeight,
-        setWeight = viewModel::setWeight,
         bmiResult
     )
 }
@@ -96,10 +99,9 @@ private fun MainScreenHoisting(navController : NavHostController, viewModel : BM
 fun MainScreen(
     height : String,
     weight : String,
-    setHeight : (String) -> Unit,
-    setWeight : (String) -> Unit,
     onResult : () -> Unit = {},
 ) {
+    val viewModel : BMIViewModel = viewModel(LocalContext.current as ComponentActivity)
     var weightHighLightRef : ((Boolean) -> Unit)? = null
     var heightHighLightRef : ((Boolean) -> Unit)? = null
 
@@ -127,7 +129,7 @@ fun MainScreen(
             weightHighLightRef = highlightView() {
                 InputField(
                     weight,
-                    setWeight,
+                    viewModel::setWeight,
                     "Weight", "input weight",
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions().copy(
@@ -140,7 +142,7 @@ fun MainScreen(
             heightHighLightRef = highlightView() {
                 InputField(
                     height,
-                    setHeight,
+                    viewModel::setHeight,
                     "Height", "input height",
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions().copy(
@@ -240,5 +242,5 @@ fun TextField(text : String, textColor : Color = Color.Black) {
 @Preview
 @Composable
 fun MainPreview() {
-    MainScreen("", "", {}, {})
+    MainScreen("", "", {})
 }
