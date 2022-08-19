@@ -5,4 +5,7 @@
     <string name="level2">중비만</string>
     <string name="level3">고도비만</string>
     <string name="result_fail">결과 오류</string>
+    <string name="search">Search</string>
+    <string name="body_section_title">align your body</string>
+    <string name="favorite_section_title">favorite collections</string>
 </resources>

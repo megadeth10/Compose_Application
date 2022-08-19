@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,13 +28,15 @@ import kotlinx.coroutines.launch
 @Composable
 fun customScaffold(
     topAppbar : @Composable () -> Unit = {},
+    bottomAppBar : @Composable () -> Unit = {},
     body : @Composable (PaddingValues) -> Unit
 ) : SnackbarHostState {
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = topAppbar,
-        content = body
+        content = body,
+        bottomBar = bottomAppBar
     )
     return snackbarHostState
 }
@@ -82,7 +85,7 @@ fun CloseToastHoisting(snackbarHost : SnackbarHostState?) {
  * back button callback 등록
  */
 @Composable
-private fun BackPressHandler(
+fun BackPressHandler(
     backPressedDispatcher : OnBackPressedDispatcher? =
         LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher,
     onBackPressed : () -> Unit
@@ -105,6 +108,9 @@ private fun BackPressHandler(
     }
 }
 
+/**
+ * 해당 Compose 영역에 vibe, color effect animation
+ */
 @Composable
 fun highlightView(body : @Composable () -> Unit) : (Boolean) -> Unit {
     var highLight by rememberSaveable {
@@ -151,4 +157,51 @@ fun highlightView(body : @Composable () -> Unit) : (Boolean) -> Unit {
         body()
     }
     return setHighLight
+}
+
+/**
+ * Static field, contains all scroll values
+ */
+
+data class ScrollStateParam(
+    val params : String = "",
+    val index : Int,
+    val scrollOffset : Int
+)
+
+/**
+ * Save scroll state on all time.
+ * @param key value for comparing screen
+ * @param params arguments for find different between equals screen
+ * @param initialFirstVisibleItemIndex see [LazyListState.firstVisibleItemIndex]
+ * @param initialFirstVisibleItemScrollOffset see [LazyListState.firstVisibleItemScrollOffset]
+ */
+@Composable
+fun rememberForeverLazyListState(
+    key: String = "",
+    initialFirstVisibleItemIndex : Int = 0,
+    initialFirstVisibleItemScrollOffset : Int = 0,
+    scrollParam : ScrollStateParam? = null,
+    onDispose : ((key:String, index : Int, offset : Int) -> Unit)? = null
+) : LazyListState {
+    val scrollState = rememberSaveable(saver = LazyListState.Saver) {
+        var savedIndex = initialFirstVisibleItemIndex
+        var savedOffset = initialFirstVisibleItemScrollOffset
+        scrollParam?.let {
+            savedIndex = it.index
+            savedOffset = it.scrollOffset
+        }
+        LazyListState(
+            savedIndex,
+            savedOffset
+        )
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            val lastIndex = scrollState.firstVisibleItemIndex
+            val lastOffset = scrollState.firstVisibleItemScrollOffset
+            onDispose?.invoke(key, lastIndex, lastOffset)
+        }
+    }
+    return scrollState
 }
