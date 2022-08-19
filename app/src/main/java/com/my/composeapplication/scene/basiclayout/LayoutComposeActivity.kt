@@ -1,32 +1,30 @@
 package com.my.composeapplication.scene.basiclayout
 
-import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -41,13 +39,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.my.composeapplication.R
 import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.basiclayout.data.AlignBodyItem
@@ -73,7 +74,7 @@ class LayoutComposeActivity : BaseComponentActivity() {
 
 private var snackbarHostState : SnackbarHostState? = null
 
-private val sampleData = listOf<AlignBodyItem>(
+private val sampleData = listOf(
     AlignBodyItem(R.drawable.ic_baseline_sentiment_dissatisfied_24, "1111"),
     AlignBodyItem(R.drawable.ic_baseline_sentiment_satisfied_alt_24, "222222222"),
     AlignBodyItem(R.drawable.ic_baseline_sentiment_very_dissatisfied_24, "333"),
@@ -88,7 +89,7 @@ sealed class BottomNavigationScreens(val route : String, @StringRes val resource
     object ScaryBag : BottomNavigationScreens("ScaryBag", R.string.result, Icons.Filled.Cake)
 }
 
-private val bottomItems = listOf<BottomNavigationScreens>(
+private val bottomItems = listOf(
     BottomNavigationScreens.Frankendroid,
     BottomNavigationScreens.Pumpkin,
     BottomNavigationScreens.Ghost,
@@ -113,11 +114,14 @@ private fun MainScreen() {
             ) {
                 composable(BottomNavigationScreens.Frankendroid.route) {
                     Column(
-                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
                     ) {
+                        XmlDrawable()
                         SearchBar(modifier = Modifier.padding(8.dp))
                         SectionTitle(R.string.body_section_title) {
-                            AlignBodyRow(sampleData)
+                            AlignBodyRow(data = sampleData, scrollStateKeyName = "bbb")
                         }
                         SectionTitle(R.string.body_section_title) {
                             FavoriteCollectionGrid(sampleData)
@@ -126,7 +130,7 @@ private fun MainScreen() {
                             data = AlignBodyItem(imageId = R.drawable.ic_baseline_sentiment_dissatisfied_24, text = "aaaa")
                         )
                         SectionTitle(R.string.body_section_title) {
-                            AlignBodyRow(sampleData)
+                            AlignBodyRow(data = sampleData, scrollStateKeyName = "ccc")
                         }
                         SectionTitle(R.string.body_section_title) {
                             FavoriteCollectionGrid(sampleData)
@@ -141,7 +145,7 @@ private fun MainScreen() {
                 composable(BottomNavigationScreens.Ghost.route) {
                     Column {
                         SectionTitle(R.string.body_section_title) {
-                            AlignBodyRow(sampleData)
+                            AlignBodyRow(data = sampleData)
                         }
                     }
                 }
@@ -162,9 +166,26 @@ private fun MainScreen() {
     }
 }
 
+/**
+ * Vector아닌 xml drawable은 이미지 loader를 이용한다.
+ */
+@Composable
+fun XmlDrawable(modifier : Modifier = Modifier) {
+    Image(
+        painter = rememberAsyncImagePainter(
+            ContextCompat.getDrawable(
+                LocalContext.current,
+                R.drawable.outline_bk_point_2
+            )
+        ),
+        contentDescription = null,
+        modifier = modifier.fillMaxWidth().height(50.dp)
+    )
+}
+
 @Composable
 fun BackButton(navController : NavHostController) {
-    BackPressHandler() {
+    BackPressHandler {
         if (navController.currentDestination?.route != BottomNavigationScreens.Frankendroid.route) {
             navController.navigate(BottomNavigationScreens.Frankendroid.route)
         }
@@ -191,7 +212,7 @@ fun FavoriteCollectionGrid(data : List<AlignBodyItem>, modifier : Modifier = Mod
     LazyHorizontalGrid(
         rows = GridCells.Fixed(2),
         state = scrollState,
-        modifier = Modifier.height(112.dp),
+        modifier = modifier.height(112.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         contentPadding = PaddingValues(start = 12.dp, end = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -204,9 +225,9 @@ fun FavoriteCollectionGrid(data : List<AlignBodyItem>, modifier : Modifier = Mod
 
 @Composable
 fun AlignBodyRow(
+    modifier : Modifier = Modifier,
     data : List<AlignBodyItem>,
-    scrollStateKeyName : String = "aaa",
-    modifier : Modifier = Modifier
+    scrollStateKeyName : String = "aaa"
 ) {
 //    val scrollState = rememberLazyListState()
     val viewModel : LayoutComposeViewModel = viewModel(
@@ -263,7 +284,7 @@ fun AlignYourBodyElement(modifier : Modifier = Modifier, data : AlignBodyItem) {
     val viewWidth = 88.dp
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = CenterHorizontally
     ) {
         Image(
             painterResource(id = data.imageId),
@@ -296,7 +317,8 @@ fun FavoriteCollectionCard(modifier : Modifier = Modifier, data : AlignBodyItem)
         Row(
             modifier = Modifier
                 .width(192.dp)
-                .height(56.dp),
+                .height(56.dp)
+                .background(Color(red = 214, green = 200, blue = 156, alpha = 255)),
             verticalAlignment = CenterVertically
         ) {
             Image(
@@ -363,58 +385,63 @@ private fun SootheBottomNavigation(
     }
 }
 
-
-@Preview(name = "SootheBottomNavigation")
+@Preview(name = "XmlDrawable")
 @Composable
-fun SootheBottomNavigationPreview() {
-    SootheBottomNavigation(bottomItems, NavHostController(LocalContext.current))
+fun XmlDrawablePreview() {
+    XmlDrawable()
 }
 
-@Preview(name = "SectionTitle")
-@Composable
-fun SectionTitlePreview() {
-    SectionTitle(strId = R.string.level3) {
-
-    }
-}
-
-@Preview(name = "FavoriteCollectionGrid")
-@Composable
-fun FavoriteCollectionGridPreview() {
-    FavoriteCollectionGrid(sampleData)
-}
-
-@Preview(name = "FavoriteCollectionCardRow")
-@Composable
-fun FavoriteCollectionCardRowPreview() {
-    AlignBodyRow(sampleData)
-}
-
-@Preview(name = "FavoriteCollectionCard")
-@Composable
-fun FavoriteCollectionCardPreview() {
-    FavoriteCollectionCard(
-        modifier = Modifier.padding(8.dp),
-        data = AlignBodyItem(imageId = R.drawable.ic_baseline_sentiment_dissatisfied_24, text = "aaaa")
-    )
-}
-
-@Preview(name = "SearchBar")
-@Composable
-fun SearchBarPreview() {
-    SearchBar(modifier = Modifier.padding(8.dp))
-}
-
-@Preview(name = "AlignYourBodyElement")
-@Composable
-fun AlignYourBodyElementPreview() {
-    AlignYourBodyElement(
-        data = AlignBodyItem(imageId = R.drawable.ic_baseline_sentiment_dissatisfied_24, text = "aaaa")
-    )
-}
-
-@Preview(name = "Screen")
-@Composable
-fun MySoothePreview() {
-    MainScreen()
-}
+//@Preview(name = "SootheBottomNavigation")
+//@Composable
+//fun SootheBottomNavigationPreview() {
+//    SootheBottomNavigation(bottomItems, NavHostController(LocalContext.current))
+//}
+//
+//@Preview(name = "SectionTitle")
+//@Composable
+//fun SectionTitlePreview() {
+//    SectionTitle(strId = R.string.level3) {
+//
+//    }
+//}
+//
+//@Preview(name = "FavoriteCollectionGrid")
+//@Composable
+//fun FavoriteCollectionGridPreview() {
+//    FavoriteCollectionGrid(sampleData)
+//}
+//
+//@Preview(name = "FavoriteCollectionCardRow")
+//@Composable
+//fun FavoriteCollectionCardRowPreview() {
+//    AlignBodyRow(data = sampleData)
+//}
+//
+//@Preview(name = "FavoriteCollectionCard")
+//@Composable
+//fun FavoriteCollectionCardPreview() {
+//    FavoriteCollectionCard(
+//        modifier = Modifier.padding(8.dp),
+//        data = AlignBodyItem(imageId = R.drawable.ic_baseline_sentiment_dissatisfied_24, text = "aaaa")
+//    )
+//}
+//
+//@Preview(name = "SearchBar")
+//@Composable
+//fun SearchBarPreview() {
+//    SearchBar(modifier = Modifier.padding(8.dp))
+//}
+//
+//@Preview(name = "AlignYourBodyElement")
+//@Composable
+//fun AlignYourBodyElementPreview() {
+//    AlignYourBodyElement(
+//        data = AlignBodyItem(imageId = R.drawable.ic_baseline_sentiment_dissatisfied_24, text = "aaaa")
+//    )
+//}
+//
+//@Preview(name = "Screen")
+//@Composable
+//fun MySoothePreview() {
+//    MainScreen()
+//}
