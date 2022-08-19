@@ -2,6 +2,7 @@ package com.my.composeapplication.scene
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,22 +50,43 @@ fun SimpleList() {
     val scrollState = rememberLazyListState()
 // We save the coroutine scope where our animated scroll will be executed
     val coroutineScore = rememberCoroutineScope()
-
+    val showButton by remember {
+        derivedStateOf { scrollState.firstVisibleItemIndex > 0 }
+    }
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .height(0.dp)
                 .weight(1.0f)
         ) {
+
             customScaffold(
                 topAppbar = {
                     CustomTopAppBar("BIM Calculator")
                 }
             ) {
-                LazyColumn(state = scrollState,
-                modifier = Modifier.padding(top = it.calculateTopPadding())) {
-                    items(listSize) { item ->
-                        ImageListItem(item)
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                ) {
+                    LazyColumn(
+                        state = scrollState,
+                        modifier = Modifier.padding(top = it.calculateTopPadding())
+                    ) {
+                        items(listSize) { item ->
+                            ImageListItem(item)
+                        }
+                    }
+                    Box(contentAlignment = Alignment.BottomEnd,
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                        this@Row.AnimatedVisibility(visible = showButton) {
+                            IconButton(onClick = {
+                                coroutineScore.launch { scrollState.animateScrollToItem(0) }
+                            }) {
+                                Icon(imageVector = Icons.Default.Favorite, contentDescription = null)
+                            }
+                        }
                     }
                 }
             }
@@ -148,9 +170,11 @@ fun ImageListItem(
                 modifier = Modifier.size(50.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = "Item #$index",
