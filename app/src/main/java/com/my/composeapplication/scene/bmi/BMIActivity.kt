@@ -95,6 +95,7 @@ private fun MainScreenHoisting(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     height : String,
@@ -184,14 +185,17 @@ private fun validation(height : String, weight : String) : Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomTopAppBar(title : String, showBack : Boolean = false, onBack : (() -> Unit)? = null) {
-    val scrollState = rememberTopAppBarState()
+fun CustomTopAppBar(
+    title : String, scrollBehavior : TopAppBarScrollBehavior? = null,
+    showBack : Boolean = false, onBack : (() -> Unit)? = null
+) {
+    val scrollBehaviorState = remember { scrollBehavior }
     SmallTopAppBar(
         title = {
             Text(title)
         },
         colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = PurpleGrey80),
-        scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(scrollState),
+        scrollBehavior = scrollBehaviorState,
         navigationIcon = {
             if (showBack) {
                 Box(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {

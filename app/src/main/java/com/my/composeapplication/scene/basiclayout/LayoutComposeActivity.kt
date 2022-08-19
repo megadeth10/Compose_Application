@@ -13,18 +13,14 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -46,9 +42,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.my.composeapplication.R
 import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.basiclayout.data.AlignBodyItem
@@ -118,6 +112,7 @@ private fun MainScreen() {
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
+                        ScrollBoxesSmooth()
                         XmlDrawable()
                         SearchBar(modifier = Modifier.padding(8.dp))
                         SectionTitle(R.string.body_section_title) {
@@ -162,6 +157,25 @@ private fun MainScreen() {
             } else {
                 BackButton(navController)
             }
+        }
+    }
+}
+
+@Composable
+private fun ScrollBoxesSmooth() {
+    // Smoothly scroll 100px on first composition
+    val state = rememberScrollState()
+    LaunchedEffect(Unit) { state.animateScrollTo(100) }
+
+    Column(
+        modifier = Modifier
+            .background(Color.LightGray)
+            .size(100.dp)
+            .padding(horizontal = 8.dp)
+            .verticalScroll(state)
+    ) {
+        repeat(10) {
+            Text("Item $it", modifier = Modifier.padding(2.dp))
         }
     }
 }
@@ -440,8 +454,8 @@ fun XmlDrawablePreview() {
 //    )
 //}
 //
-//@Preview(name = "Screen")
-//@Composable
-//fun MySoothePreview() {
-//    MainScreen()
-//}
+@Preview(name = "Screen")
+@Composable
+fun MySoothePreview() {
+    MainScreen()
+}

@@ -8,31 +8,40 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material.TopAppBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun customScaffold(
+    modifier: Modifier = Modifier,
     topAppbar : @Composable () -> Unit = {},
     bottomAppBar : @Composable () -> Unit = {},
     body : @Composable (PaddingValues) -> Unit
 ) : SnackbarHostState {
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
+        modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = topAppbar,
         content = body,
@@ -90,7 +99,9 @@ fun BackPressHandler(
         LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher,
     onBackPressed : () -> Unit
 ) {
+    // Safely update the current `onBack` lambda when a new one is provided
     val currentOnBackPressed by rememberUpdatedState(newValue = onBackPressed)
+    // Remember in Composition a back callback that calls the `onBack` lambda
     val backCallback = remember {
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -98,10 +109,13 @@ fun BackPressHandler(
             }
         }
     }
+    // If `backDispatcher` changes, dispose and reset the effect
     DisposableEffect(
         key1 = backPressedDispatcher,
     ) {
+        // Add callback to the backDispatcher
         backPressedDispatcher?.addCallback(backCallback)
+        // When the effect leaves the Composition, remove the callback
         onDispose {
             backCallback.remove()
         }
@@ -204,4 +218,64 @@ fun rememberForeverLazyListState(
         }
     }
     return scrollState
+}
+
+/**
+ * Nested scroll 고정 영역과 삭제 영역을 구현함.
+ */
+@Composable
+fun NestedScrollCompose(
+    toolbarHeight : Dp = 48.dp,
+    toolbarFixedHeight : Dp = 30.dp,
+    topAppbar : @Composable (height:Dp, offsetHeightPx:Int) -> Unit,
+    fixedContainer: @Composable (height:Dp, offsetHeightPx:Int)->Unit,
+    body: @Composable (topPadding: Dp)-> Unit
+){
+    // here we use LazyColumn that has build-in nested scroll, but we want to act like a
+// parent for this LazyColumn and participate in its nested scroll.
+// Let's make a collapsing toolbar for LazyColumn
+    val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
+    val toolbarFixedHeightPx = with(LocalDensity.current) { toolbarFixedHeight.roundToPx().toFloat() }
+// our offset to collapse toolbar
+    val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
+// now, let's create connection to the nested scroll system and listen to the scroll
+// happening inside child LazyColumn
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available : Offset, source : NestedScrollSource) : Offset {
+                // try to consume before LazyColumn to collapse toolbar if needed, hence pre-scroll
+                val delta = available.y
+                val newOffset = toolbarOffsetHeightPx.value + delta
+                toolbarOffsetHeightPx.value = newOffset.coerceIn(-toolbarHeightPx, 0f)
+                // here's the catch: let's pretend we consumed 0 in any case, since we want
+                // LazyColumn to scroll anyway for good UX
+                // We're basically watching scroll without taking it
+                return Offset.Zero
+            }
+        }
+    }
+    Box(
+        Modifier
+            .fillMaxSize()
+            // attach as a parent to the nested scroll system
+            .nestedScroll(nestedScrollConnection)
+    ) {
+        body(toolbarHeight + toolbarFixedHeight)
+        topAppbar(toolbarHeight, toolbarOffsetHeightPx.value.roundToInt())
+//        TopAppBar(
+//            modifier = Modifier
+//                .height(toolbarHeight)
+//                .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) },
+//            title = { Text("toolbar offset is ${toolbarOffsetHeightPx.value}") }
+//        )
+        fixedContainer(toolbarFixedHeight, toolbarHeightPx.toInt() + toolbarOffsetHeightPx.value.roundToInt())
+//        Text(
+//            text = "Fixed Title",
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(toolbarFixedHeight)
+//                .offset { IntOffset(x = 0, y = toolbarHeightPx.toInt() + toolbarOffsetHeightPx.value.roundToInt()) }
+//                .background(Color.Red)
+//        )
+    }
 }

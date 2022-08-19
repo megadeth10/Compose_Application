@@ -3,6 +3,7 @@ package com.my.composeapplication.scene
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,6 +45,7 @@ class SimpleListActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimpleList() {
     val listSize = 100
@@ -53,6 +56,14 @@ fun SimpleList() {
     val showButton by remember {
         derivedStateOf { scrollState.firstVisibleItemIndex > 0 }
     }
+
+    val topappbarstate = rememberTopAppBarState()
+    val scrollBehavior = remember {
+        TopAppBarDefaults.enterAlwaysScrollBehavior(
+            topappbarstate
+        )
+    }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -61,8 +72,9 @@ fun SimpleList() {
         ) {
 
             customScaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topAppbar = {
-                    CustomTopAppBar("BIM Calculator")
+                    CustomTopAppBar(title = "BIM Calculator", scrollBehavior = scrollBehavior)
                 }
             ) {
                 Box(
