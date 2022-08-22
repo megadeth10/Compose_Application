@@ -10,7 +10,6 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material.TopAppBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,7 +24,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.launch
@@ -186,7 +184,7 @@ data class ScrollStateParam(
 /**
  * Save scroll state on all time.
  * @param key value for comparing screen
- * @param params arguments for find different between equals screen
+ * @param scrollParam arguments for find different between equals screen
  * @param initialFirstVisibleItemIndex see [LazyListState.firstVisibleItemIndex]
  * @param initialFirstVisibleItemScrollOffset see [LazyListState.firstVisibleItemScrollOffset]
  */
@@ -228,14 +226,13 @@ fun NestedScrollCompose(
     toolbarHeight : Dp = 48.dp,
     toolbarFixedHeight : Dp = 30.dp,
     topAppbar : @Composable (height:Dp, offsetHeightPx:Int) -> Unit,
-    fixedContainer: @Composable (height:Dp, offsetHeightPx:Int)->Unit,
+    fixedContainer: @Composable ((height:Dp, offsetHeightPx:Int)->Unit)? = null,
     body: @Composable (topPadding: Dp)-> Unit
 ){
     // here we use LazyColumn that has build-in nested scroll, but we want to act like a
 // parent for this LazyColumn and participate in its nested scroll.
 // Let's make a collapsing toolbar for LazyColumn
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
-    val toolbarFixedHeightPx = with(LocalDensity.current) { toolbarFixedHeight.roundToPx().toFloat() }
 // our offset to collapse toolbar
     val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
 // now, let's create connection to the nested scroll system and listen to the scroll
@@ -262,20 +259,6 @@ fun NestedScrollCompose(
     ) {
         body(toolbarHeight + toolbarFixedHeight)
         topAppbar(toolbarHeight, toolbarOffsetHeightPx.value.roundToInt())
-//        TopAppBar(
-//            modifier = Modifier
-//                .height(toolbarHeight)
-//                .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) },
-//            title = { Text("toolbar offset is ${toolbarOffsetHeightPx.value}") }
-//        )
-        fixedContainer(toolbarFixedHeight, toolbarHeightPx.toInt() + toolbarOffsetHeightPx.value.roundToInt())
-//        Text(
-//            text = "Fixed Title",
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(toolbarFixedHeight)
-//                .offset { IntOffset(x = 0, y = toolbarHeightPx.toInt() + toolbarOffsetHeightPx.value.roundToInt()) }
-//                .background(Color.Red)
-//        )
+        fixedContainer?.invoke(toolbarFixedHeight, toolbarHeightPx.toInt() + toolbarOffsetHeightPx.value.roundToInt())
     }
 }

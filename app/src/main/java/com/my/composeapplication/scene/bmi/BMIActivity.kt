@@ -10,8 +10,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,9 +28,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.my.composeapplication.base.*
-import com.my.composeapplication.viewmodel.BMIViewModel
+import com.my.composeapplication.base.BaseComponentActivity
+import com.my.composeapplication.base.CloseToastHoisting
+import com.my.composeapplication.base.customScaffold
+import com.my.composeapplication.base.highlightView
 import com.my.composeapplication.ui.theme.PurpleGrey80
+import com.my.composeapplication.viewmodel.BMIViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -94,8 +98,6 @@ private fun MainScreenHoisting(
     )
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     height : String,
@@ -118,7 +120,7 @@ fun MainScreen(
     }
     snackbarHostState = customScaffold(
         topAppbar = {
-            CustomTopAppBar("BMI Calculator")
+            CustomTopAppBar(title = "BMI Calculator")
         }
     ) {
         Column(
@@ -127,7 +129,7 @@ fun MainScreen(
                 .padding(start = 10.dp, end = 10.dp, bottom = 10.dp, top = it.calculateTopPadding())
         ) {
             TextField(text = "BMI Test")
-            weightHighLightRef = highlightView() {
+            weightHighLightRef = highlightView {
                 InputField(
                     weight,
                     viewModel::setWeight,
@@ -140,7 +142,7 @@ fun MainScreen(
                 )
             }
             Spacer(modifier = Modifier.height(15.dp))
-            heightHighLightRef = highlightView() {
+            heightHighLightRef = highlightView {
                 InputField(
                     height,
                     viewModel::setHeight,
@@ -186,16 +188,16 @@ private fun validation(height : String, weight : String) : Boolean {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomTopAppBar(
-    title : String, scrollBehavior : TopAppBarScrollBehavior? = null,
+    modifier : Modifier = Modifier,
+    title : String,
     showBack : Boolean = false, onBack : (() -> Unit)? = null
 ) {
-    val scrollBehaviorState = remember { scrollBehavior }
     SmallTopAppBar(
+        modifier = modifier.wrapContentSize(align = Alignment.Center),
         title = {
             Text(title)
         },
         colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = PurpleGrey80),
-        scrollBehavior = scrollBehaviorState,
         navigationIcon = {
             if (showBack) {
                 Box(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
@@ -246,5 +248,7 @@ fun TextField(text : String, textColor : Color = Color.Black) {
 @Preview
 @Composable
 fun MainPreview() {
-    MainScreen("", "", {})
+    MainScreen("", "") {
+
+    }
 }

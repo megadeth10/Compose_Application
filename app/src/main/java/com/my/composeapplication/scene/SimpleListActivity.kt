@@ -3,7 +3,6 @@ package com.my.composeapplication.scene
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,12 +19,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
-import com.my.composeapplication.base.customScaffold
+import com.my.composeapplication.base.NestedScrollCompose
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -45,7 +44,6 @@ class SimpleListActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimpleList() {
     val listSize = 100
@@ -57,26 +55,19 @@ fun SimpleList() {
         derivedStateOf { scrollState.firstVisibleItemIndex > 0 }
     }
 
-    val topappbarstate = rememberTopAppBarState()
-    val scrollBehavior = remember {
-        TopAppBarDefaults.enterAlwaysScrollBehavior(
-            topappbarstate
-        )
-    }
-
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .height(0.dp)
                 .weight(1.0f)
         ) {
-
-            customScaffold(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                topAppbar = {
-                    CustomTopAppBar(title = "BIM Calculator", scrollBehavior = scrollBehavior)
-                }
-            ) {
+            NestedScrollCompose(
+                toolbarHeight = 64.dp,
+                topAppbar = { height, offsetPx ->
+                    CustomTopAppBar(title = "BIM Calculator", modifier = Modifier
+                        .height(height)
+                        .offset { IntOffset(x = 0, y = offsetPx) })
+                }) {
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -84,14 +75,17 @@ fun SimpleList() {
                 ) {
                     LazyColumn(
                         state = scrollState,
-                        modifier = Modifier.padding(top = it.calculateTopPadding())
                     ) {
                         items(listSize) { item ->
                             ImageListItem(item)
                         }
                     }
-                    Box(contentAlignment = Alignment.BottomEnd,
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                    Box(
+                        contentAlignment = Alignment.BottomEnd,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                    ) {
                         this@Row.AnimatedVisibility(visible = showButton) {
                             IconButton(onClick = {
                                 coroutineScore.launch { scrollState.animateScrollToItem(0) }
@@ -148,7 +142,6 @@ private fun ImageListItem(index : Int) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageListItem(
     index : Int,
