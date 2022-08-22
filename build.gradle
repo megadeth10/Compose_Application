@@ -25,6 +25,9 @@ buildscript {
         hilt_version ="2.42"
         hilt_lifecycle_version = "1.0.0-alpha03"
         kotlin_version = "1.7.0"
+        glide_version = "4.13.2"
+        android_lifecycle_v8_version = "2.5.1"
+        landscapist_version = "1.6.1"
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"

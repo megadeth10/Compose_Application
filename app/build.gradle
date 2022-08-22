@@ -95,9 +95,6 @@ dependencies {
     //ViewModels delegation extentensions for activity
     implementation "androidx.activity:activity-ktx:1.5.1"
 
-    // bitmap or vector image load
-    implementation 'io.coil-kt:coil-compose:2.0.0'
-
     // hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
@@ -105,4 +102,17 @@ dependencies {
 //    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_lifecycle_version"
     kapt "androidx.hilt:hilt-compiler:$hilt_lifecycle_version"
 
+
+    // bitmap or vector image load
+//    implementation 'io.coil-kt:coil-compose:2.0.0'
+
+    // Glide
+    implementation "com.github.bumptech.glide:glide:$glide_version"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
+    kapt "androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_v8_version"
+    kapt "com.github.bumptech.glide:compiler:$glide_version"
+    // Glide
+
+    //glide for Compose ref: https://github.com/skydoves/landscapist
+    implementation "com.github.skydoves:landscapist-glide:$landscapist_version"
 }

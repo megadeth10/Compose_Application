@@ -19,13 +19,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
 import com.my.composeapplication.base.NestedScrollCompose
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
+import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -41,6 +42,10 @@ class SimpleListActivity : ComponentActivity() {
             }
         }
         setContentView(composeView)
+    }
+
+    override fun onBackPressed() {
+        finish()
     }
 }
 
@@ -169,10 +174,10 @@ fun ImageListItem(
                 ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(model = "https://developer.android.com/images/brand/Android_Robot.png"),
-                contentDescription = "Android Logo",
-                modifier = Modifier.size(50.dp)
+            GlideImage(
+                imageModel = "https://developer.android.com/images/brand/Android_Robot.png",
+                modifier = Modifier.size(50.dp),
+                contentScale = ContentScale.Fit
             )
             Spacer(modifier = Modifier.width(10.dp))
             Box(
