@@ -42,11 +42,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.rememberAsyncImagePainter
 import com.my.composeapplication.R
 import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.basiclayout.data.AlignBodyItem
 import com.my.composeapplication.viewmodel.LayoutComposeViewModel
+import com.skydoves.landscapist.rememberDrawablePainter
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
@@ -186,14 +186,16 @@ private fun ScrollBoxesSmooth() {
 @Composable
 fun XmlDrawable(modifier : Modifier = Modifier) {
     Image(
-        painter = rememberAsyncImagePainter(
+        painter = rememberDrawablePainter(
             ContextCompat.getDrawable(
                 LocalContext.current,
                 R.drawable.outline_bk_point_2
             )
         ),
         contentDescription = null,
-        modifier = modifier.fillMaxWidth().height(50.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp)
     )
 }
 
