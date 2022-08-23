@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +31,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.my.composeapplication.R
 import com.my.composeapplication.databinding.FragmentMainBinding
 import com.my.composeapplication.databinding.LayoutInputBinding
@@ -36,11 +39,14 @@ import com.my.composeapplication.scene.Greeting
 import com.my.composeapplication.ui.theme.ComposeApplicationTheme
 import com.my.composeapplication.ui.theme.Gray
 import com.my.composeapplication.viewmodel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.internal.managers.ViewComponentManager
 
 
 /**
  * Created by YourName on 2022/06/27.
  */
+@AndroidEntryPoint
 class MainFragment : Fragment() {
     private var _binding : FragmentMainBinding? = null
     private val binding get() = _binding
@@ -52,13 +58,13 @@ class MainFragment : Fragment() {
         binding?.let {
             view = it.root
             it.composeView.setContent {
-                main(viewModel)
+                MainScreenHoisting()
             }
             it.composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             it.containerMiddle.addView(ComposeView(requireContext()).apply {
                 this.id = R.id.composeView1 //리소스로 생성한 아이디로 설정함.
                 this.setContent {
-                    body(viewModel)
+                    body()
                 }
             })
         }
@@ -71,11 +77,27 @@ class MainFragment : Fragment() {
     }
 }
 
+
 @Composable
-fun main(viewModel : MainViewModel) {
+fun MainScreenHoisting() {
+    val viewModel: MainViewModel = when(val context = LocalContext.current){
+        is ViewComponentManager.FragmentContextWrapper -> {
+            viewModel(context.baseContext as AppCompatActivity)
+        }
+        is AppCompatActivity -> {
+            viewModel(context as AppCompatActivity)
+        }
+        else -> {
+            null
+        }
+    } ?: return
+    MainScreen(viewModel)
+}
+@Composable
+fun MainScreen(viewModel : MainViewModel) {
     Column() {
         Row() {
-            content(viewModel)
+            content()
         }
         Spacer(modifier = Modifier.height(5.dp))
         Row (){
@@ -94,12 +116,39 @@ fun main(viewModel : MainViewModel) {
 }
 
 @Composable
-fun body(mainViewModel : MainViewModel) {
-    Greeting(name = "subView", mainViewModel)
+fun body() {
+    Greeting(name = "subView")
+}
+
+@Composable
+private fun inputLayoutHoisting() {
+    val viewModel : MainViewModel = when (val context = LocalContext.current) {
+        is ViewComponentManager.FragmentContextWrapper -> {
+            viewModel(context.baseContext as AppCompatActivity)
+        }
+        is AppCompatActivity -> {
+            viewModel(context as AppCompatActivity)
+        }
+        else -> {
+            null
+        }
+    } ?: return
+    inputLayout(viewModel)
 }
 
 @Composable
 fun inputLayout(viewModel : MainViewModel) {
+    val viewModel : MainViewModel = when (val context = LocalContext.current) {
+        is ViewComponentManager.FragmentContextWrapper -> {
+            viewModel(context.baseContext as AppCompatActivity)
+        }
+        is AppCompatActivity -> {
+            viewModel(context as AppCompatActivity)
+        }
+        else -> {
+            null
+        }
+    } ?: return
     ComposeApplicationTheme {
         // AndroidViewBinding API를 통한 view binding
         val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
@@ -162,15 +211,15 @@ fun HelloContent(name : String, onNameChange : (String) -> Unit) {
 
 @Composable
 //fun content(viewModel : MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
-fun content(viewModel : MainViewModel) {
+fun content() {
     ComposeApplicationTheme {
         Surface() {
             Column {
                 Row {
-                    Greeting(name = "Compose", viewModel)
+                    Greeting(name = "Compose")
                 }
                 Row {
-                    inputLayout(viewModel)
+                    inputLayoutHoisting()
                 }
             }
         }
@@ -179,15 +228,21 @@ fun content(viewModel : MainViewModel) {
 
 @Preview(name = "Light Mode", uiMode = UI_MODE_NIGHT_NO, showBackground = true)
 @Composable
-fun defaultLightPreview(viewModel : MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
-    main(viewModel)
+fun defaultLightPreview() {
+    MainScreen(MainViewModel())
 }
 
 
 @Preview(name = "Dark Mode", uiMode = UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
-fun defaultDarkPreview(viewModel : MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
-    main(viewModel)
+fun defaultDarkPreview() {
+    MainScreen(MainViewModel())
+}
+
+@Preview(name = "test")
+@Composable
+fun testPreview() {
+    Text("aaaaa")
 }
 
 

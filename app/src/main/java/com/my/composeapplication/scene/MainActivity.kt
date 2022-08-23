@@ -17,20 +17,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.my.composeapplication.databinding.ActivityMainBinding
 import com.my.composeapplication.fragment.MainFragment
 import com.my.composeapplication.ui.theme.ComposeApplicationTheme
 import com.my.composeapplication.ui.theme.White
 import com.my.composeapplication.viewmodel.ConversationViewModel
 import com.my.composeapplication.viewmodel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.internal.managers.ViewComponentManager
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    private val mainViewModel: MainViewModel by viewModels()
+    private val mainViewModel : MainViewModel by viewModels()
     private var _bind : ActivityMainBinding? = null
     private val bind get() = _bind!!
 
@@ -43,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         bind.composeMain.setContent {
             ComposeApplicationTheme {
                 // A surface container using the 'background' color from the theme
-                MyApp(mainViewModel)
+                MyApp()
             }
         }
         val fragment = MainFragment()
@@ -64,7 +70,7 @@ class MainActivity : AppCompatActivity() {
 }
 
 @Composable
-private fun MyApp(mainViewModel : MainViewModel) {
+private fun MyApp() {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,17 +78,28 @@ private fun MyApp(mainViewModel : MainViewModel) {
     ) { //MaterialTheme.colorScheme.background) {
         Column() {
             Row() {
-                Greeting("안드로이드", mainViewModel)
+                Greeting("안드로이드")
             }
             Row() {
-                Greeting("Android", mainViewModel)
+                Greeting("Android")
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name : String, mainViewModel: MainViewModel) {
+fun Greeting(name : String) {
+    val mainViewModel : MainViewModel = when (val context = LocalContext.current) {
+        is ViewComponentManager.FragmentContextWrapper -> {
+            viewModel(context.baseContext as AppCompatActivity)
+        }
+        is AppCompatActivity -> {
+            viewModel(context as AppCompatActivity)
+        }
+        else -> {
+            null
+        }
+    } ?: return
     Log.e(MainActivity::class.simpleName, "Greeting() viewmodel: $mainViewModel")
     Text(
         text = "Hello $name!", style = TextStyle(color = White), modifier = Modifier
@@ -95,8 +112,8 @@ fun Greeting(name : String, mainViewModel: MainViewModel) {
 
 @Preview(showBackground = true, name = "preview")
 @Composable
-fun DefaultPreview(viewModel : MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun DefaultPreview() {
     ComposeApplicationTheme {
-        MyApp(viewModel)
+        MyApp()
     }
 }
