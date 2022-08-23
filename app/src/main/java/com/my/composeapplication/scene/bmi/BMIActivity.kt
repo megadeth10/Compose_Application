@@ -1,8 +1,8 @@
 package com.my.composeapplication.scene.bmi
 
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
@@ -11,14 +11,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.inset
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,42 +51,64 @@ private var snackbarHostState : SnackbarHostState? = null
 @AndroidEntryPoint
 class BMIActivity : BaseComponentActivity() {
     private val viewModel by viewModels<BMIViewModel>()
-    override fun getContent() : @Composable () -> Unit = {
-        val navController = rememberNavController()
 
-        NavHost(navController = navController, startDestination = "input") {
+    @OptIn(ExperimentalComposeUiApi::class)
+    override fun getContent() : @Composable () -> Unit = {
+        val appState = rememberMainScreenState()
+        NavHost(navController = appState.navController, startDestination = "input") {
             composable("input") {
-                MainScreenHoisting(navController)
+                MainScreenHoisting(appState)
                 CloseToastHoisting(snackbarHostState)
             }
             composable("result/{level}") {
                 val level = it.arguments?.getString("level")?.toInt() ?: 0
-                ResultScreenHoisting(navController, level)
+                ResultScreenHoisting(appState.navController, level)
             }
         }
     }
 }
 
+class MainScreenState @OptIn(ExperimentalComposeUiApi::class) constructor(
+    val viewModel : BMIViewModel,
+    val focusManager : FocusManager,
+    val keyboardController : SoftwareKeyboardController?,
+    val navController : NavHostController,
+) {
+    fun goResult(level : Int) {
+        navController.navigate("result/$level")
+    }
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun MainScreenHoisting(
-    navController : NavHostController,
-    viewModel : BMIViewModel = viewModel(LocalContext.current as ComponentActivity)
-) {
-//    val heightState = viewModel.height.observeAsState()
-//    val weightState = viewModel.weight.observeAsState()
-    val heightState = viewModel.height.value.trim()
-    val weightState = viewModel.weight.value.trim()
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
+fun rememberMainScreenState(
+    viewModel : BMIViewModel = viewModel(LocalContext.current as BaseComponentActivity),
+    focusManager : FocusManager = LocalFocusManager.current,
+    keyboardController : SoftwareKeyboardController? = LocalSoftwareKeyboardController.current,
+    navController : NavHostController = rememberNavController()
+) = remember(viewModel, focusManager, keyboardController, navController) {
+    MainScreenState(
+        viewModel = viewModel,
+        focusManager = focusManager,
+        keyboardController = keyboardController,
+        navController = navController
+    )
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun MainScreenHoisting(appState : MainScreenState) {
+    val heightState = appState.viewModel.height.value.trim()
+    val weightState = appState.viewModel.weight.value.trim()
     val coroutineScope = rememberCoroutineScope()
 
+
     val bmiResult : () -> Unit = {
-        focusManager.clearFocus()
-        keyboardController?.hide()
+        appState.focusManager.clearFocus()
+        appState.keyboardController?.hide()
         if (validation(heightState, weightState)) {
             val level = (heightState.toInt().div(weightState.toInt()))
-            navController.navigate("result/$level")
+            appState.goResult(level)
         } else {
             snackbarHostState?.let {
                 it.currentSnackbarData?.dismiss()
@@ -94,6 +121,8 @@ private fun MainScreenHoisting(
     MainScreen(
         height = heightState,
         weight = weightState,
+        setWeight = { newValue -> appState.viewModel.setWeight(newValue) },
+        setHeight = { newValue -> appState.viewModel.setHeight(newValue) },
         bmiResult
     )
 }
@@ -102,9 +131,10 @@ private fun MainScreenHoisting(
 fun MainScreen(
     height : String,
     weight : String,
+    setWeight : (String) -> Unit = {},
+    setHeight : (String) -> Unit = {},
     onResult : () -> Unit = {},
 ) {
-    val viewModel : BMIViewModel = viewModel(LocalContext.current as ComponentActivity)
     var weightHighLightRef : ((Boolean) -> Unit)? = null
     var heightHighLightRef : ((Boolean) -> Unit)? = null
 
@@ -132,7 +162,7 @@ fun MainScreen(
             weightHighLightRef = highlightView {
                 InputField(
                     weight,
-                    viewModel::setWeight,
+                    setWeight,
                     "Weight", "input weight",
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions().copy(
@@ -145,7 +175,7 @@ fun MainScreen(
             heightHighLightRef = highlightView {
                 InputField(
                     height,
-                    viewModel::setHeight,
+                    setHeight,
                     "Height", "input height",
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions().copy(
@@ -190,7 +220,9 @@ private fun validation(height : String, weight : String) : Boolean {
 fun CustomTopAppBar(
     modifier : Modifier = Modifier,
     title : String,
-    showBack : Boolean = false, onBack : (() -> Unit)? = null
+    showBack : Boolean = false,
+    actions : @Composable RowScope.() -> Unit = {},
+    onBack : (() -> Unit)? = null,
 ) {
     SmallTopAppBar(
         modifier = modifier.wrapContentSize(align = Alignment.Center),
@@ -213,7 +245,8 @@ fun CustomTopAppBar(
                     )
                 }
             }
-        }
+        },
+        actions = actions
     )
 }
 
@@ -243,6 +276,32 @@ fun InputField(
 @Composable
 fun TextField(text : String, textColor : Color = Color.Black) {
     Text(text = text, color = textColor)
+}
+
+@Preview(name = "CanvasPreview")
+@Composable
+fun CanvasPreview() {
+    // TODO Canvas Draw
+    Canvas(Modifier.size(120.dp)) {
+        // Draw grey background, drawRect function is provided by the receiver
+        drawRect(color = Color.Gray)
+
+        // Inset content by 10 pixels on the left/right sides
+        // and 12 by the top/bottom
+        inset(10.0f, 12.0f) {
+            val quadrantSize = size / 2.0f
+
+            // Draw a rectangle within the inset bounds
+            drawRect(
+                size = quadrantSize,
+                color = Color.Red
+            )
+
+            rotate(45.0f) {
+                drawRect(size = quadrantSize, color = Color.Blue)
+            }
+        }
+    }
 }
 
 @Preview
