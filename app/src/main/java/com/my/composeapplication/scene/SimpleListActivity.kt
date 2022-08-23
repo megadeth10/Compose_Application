@@ -1,6 +1,7 @@
 package com.my.composeapplication.scene
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -21,9 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.my.composeapplication.R
 import com.my.composeapplication.base.NestedScrollCompose
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.skydoves.landscapist.glide.GlideImage
@@ -57,7 +61,13 @@ fun SimpleList() {
 // We save the coroutine scope where our animated scroll will be executed
     val coroutineScore = rememberCoroutineScope()
     val showButton by remember {
-        derivedStateOf { scrollState.firstVisibleItemIndex > 0 }
+        derivedStateOf {
+            val visiableInfo = scrollState.layoutInfo.visibleItemsInfo
+            if (visiableInfo.isNotEmpty()) {
+                Log.e(SimpleListActivity::class.simpleName, "SimpleList() firstIndex: ${visiableInfo.first().index}")
+            }
+            scrollState.firstVisibleItemIndex > 0
+        }
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -174,11 +184,21 @@ fun ImageListItem(
                 ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            GlideImage(
-                imageModel = "https://developer.android.com/images/brand/Android_Robot.png",
-                modifier = Modifier.size(50.dp),
-                contentScale = ContentScale.Fit
-            )
+            //TODO Preview Mode의 error로 무시하도록 처리함.
+            if (!LocalInspectionMode.current) {
+                GlideImage(
+                    imageModel = "https://developer.android.com/images/brand/Android_Robot.png",
+                    modifier = Modifier.size(50.dp),
+                    contentScale = ContentScale.Fit
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = null,
+                    modifier = Modifier.size(50.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
             Spacer(modifier = Modifier.width(10.dp))
             Box(
                 modifier = Modifier
