@@ -32,7 +32,7 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun customScaffold(
-    modifier: Modifier = Modifier,
+    modifier : Modifier = Modifier,
     topAppbar : @Composable () -> Unit = {},
     bottomAppBar : @Composable () -> Unit = {},
     body : @Composable (PaddingValues) -> Unit
@@ -190,11 +190,11 @@ data class ScrollStateParam(
  */
 @Composable
 fun rememberForeverLazyListState(
-    key: String = "",
+    key : String = "",
     initialFirstVisibleItemIndex : Int = 0,
     initialFirstVisibleItemScrollOffset : Int = 0,
     scrollParam : ScrollStateParam? = null,
-    onDispose : ((key:String, index : Int, offset : Int) -> Unit)? = null
+    onDispose : ((key : String, index : Int, offset : Int) -> Unit)? = null
 ) : LazyListState {
     val scrollState = rememberSaveable(saver = LazyListState.Saver) {
         var savedIndex = initialFirstVisibleItemIndex
@@ -225,10 +225,10 @@ fun rememberForeverLazyListState(
 fun NestedScrollCompose(
     toolbarHeight : Dp = 48.dp,
     toolbarFixedHeight : Dp = 30.dp,
-    topAppbar : @Composable (height:Dp, offsetHeightPx:Int) -> Unit,
-    fixedContainer: @Composable ((height:Dp, offsetHeightPx:Int)->Unit)? = null,
-    body: @Composable (topPadding: Dp)-> Unit
-){
+    topAppbar : @Composable (height : Dp, offsetHeightPx : Int) -> Unit,
+    fixedContainer : @Composable ((height : Dp, offsetHeightPx : Int) -> Unit)? = null,
+    body : @Composable (topPadding : Dp) -> Unit
+) {
     // here we use LazyColumn that has build-in nested scroll, but we want to act like a
 // parent for this LazyColumn and participate in its nested scroll.
 // Let's make a collapsing toolbar for LazyColumn
@@ -260,5 +260,26 @@ fun NestedScrollCompose(
         body(toolbarHeight + toolbarFixedHeight)
         topAppbar(toolbarHeight, toolbarOffsetHeightPx.value.roundToInt())
         fixedContainer?.invoke(toolbarFixedHeight, toolbarHeightPx.toInt() + toolbarOffsetHeightPx.value.roundToInt())
+    }
+}
+
+// TODO Infinity List Compose 추가함.
+@Composable
+fun LazyListState.OnEndItem(
+    threshold : Int = 0,
+    loadMore : () -> Unit
+) {
+    val isEndItem = remember {
+        derivedStateOf {
+            val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf true
+            lastVisibleItem.index - threshold == layoutInfo.totalItemsCount - (threshold + 1)
+        }
+    }
+    LaunchedEffect(key1 = isEndItem) {
+        snapshotFlow { isEndItem.value }
+            .collect {
+                // if should load more, then invoke loadMore
+                if (it) loadMore()
+            }
     }
 }
