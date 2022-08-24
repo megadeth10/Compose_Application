@@ -7,12 +7,12 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.my.composeapplication"
         minSdk 21
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -115,4 +115,7 @@ dependencies {
 
     //glide for Compose ref: https://github.com/skydoves/landscapist
     implementation "com.github.skydoves:landscapist-glide:$landscapist_version"
+
+    // swipe refresh ref: https://google.github.io/accompanist/swiperefresh/
+    implementation "com.google.accompanist:accompanist-swiperefresh:$swipe_refresh_version"
 }
