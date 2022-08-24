@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -74,7 +75,9 @@ private fun MyApp() {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight(), color = MaterialTheme.colorScheme.background
+            .wrapContentHeight()
+            .testTag("main"),
+        color = MaterialTheme.colorScheme.background
     ) { //MaterialTheme.colorScheme.background) {
         Column() {
             Row() {
