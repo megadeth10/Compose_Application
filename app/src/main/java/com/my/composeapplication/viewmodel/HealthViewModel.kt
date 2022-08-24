@@ -1,9 +1,6 @@
 package com.my.composeapplication.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,9 +8,11 @@ import com.my.composeapplication.scene.health.data.TodoItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
 import javax.inject.Inject
 
 /**
@@ -29,13 +28,16 @@ class HealthViewModel @Inject constructor() : ViewModel() {
     private var _list : SnapshotStateList<TodoItem> = SnapshotStateList()
     val list : List<TodoItem> get() = _list
 
-    private var _isRefreshing : MutableState<Boolean> = mutableStateOf(false)
-    val isRefreshing : State<Boolean> get() = _isRefreshing
+    private var _isRefreshing : MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isRefreshing : StateFlow<Boolean> get() = _isRefreshing.asStateFlow()
 
     fun setRefresh(newState : Boolean) {
         if (this.isRefreshing.value != newState) {
-            this._isRefreshing.value = newState
+            viewModelScope.launch {
+                this@HealthViewModel._isRefreshing.emit(newState)
+            }
         }
+        Log.e(HealthViewModel::class.java.simpleName, "onRefresh() value: ${this.isRefreshing.value}")
     }
 
     fun setCheck(item : TodoItem, state : Boolean) = _list.find { it.id == item.id }?.let {
@@ -62,7 +64,7 @@ class HealthViewModel @Inject constructor() : ViewModel() {
         }
         this.setProgress(true)
         Log.e(HealthViewModel::class.java.simpleName, "moreList()")
-        viewModelScope.launch(Dispatchers.Unconfined) {
+        viewModelScope.launch(Dispatchers.IO) {
             delay(2000)
             withContext(Dispatchers.Main) {
                 appendItem()
@@ -76,21 +78,17 @@ class HealthViewModel @Inject constructor() : ViewModel() {
         currentList.addAll(getInitList(currentList.size))
         this._list = currentList
         this.setProgress(false)
+        this.setRefresh(false)
     }
 
-    var time = 0L
     fun onRefresh() {
         if (this.isRefreshing.value) {
             return
         }
-        time = Calendar.getInstance().timeInMillis
-        Log.e(HealthViewModel::class.java.simpleName, "onRefresh()")
         this.setRefresh(true)
         _list.clear()
         moreList()
-        this.setRefresh(false)
-        Log.e(HealthViewModel::class.java.simpleName, "onRefresh() consume time: ${Calendar.getInstance().timeInMillis - time}")
     }
 }
 
-private fun getInitList(startIndex : Int = 0) = List(2000) { i -> TodoItem(i + startIndex, "Todo Item ${i + startIndex}") }
+private fun getInitList(startIndex : Int = 0) = List(20) { i -> TodoItem(i + startIndex, "Todo Item ${i + startIndex}") }

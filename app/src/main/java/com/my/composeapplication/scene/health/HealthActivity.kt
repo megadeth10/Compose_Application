@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DoneAll
@@ -127,13 +128,14 @@ private fun TodoListHoisting() {
             )
         }
     ) {
-        SwipeRefreshView(todoListState) {
-            TodoList(
-                todoListState,
-                onCheck,
-                onRemove,
-                modifier = Modifier.padding(it)
-            )
+        Box(modifier = Modifier.padding(it)) {
+            SwipeRefreshView(todoListState) {
+                TodoList(
+                    todoListState,
+                    onCheck,
+                    onRemove,
+                )
+            }
         }
     }
 }
@@ -143,13 +145,14 @@ fun SwipeRefreshView(
     todoListState : TodoListState,
     content : @Composable () -> Unit
 ) {
-    val isRefresh by todoListState.viewModel.isRefreshing
+    val isRefresh by todoListState.viewModel.isRefreshing.collectAsState()
     SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing = isRefresh),
         onRefresh = {
             todoListState.viewModel.onRefresh()
         },
         indicator = { state, trigger ->
+            Log.e(HealthActivity::class.java.simpleName, "trigger()")
             SwipeRefreshIndicator(
                 // Pass the SwipeRefreshState + trigger through
                 state = state,
@@ -157,8 +160,8 @@ fun SwipeRefreshView(
                 // Enable the scale animation
                 scale = true,
                 // Change the color and shape
-                backgroundColor = MaterialTheme.colorScheme.primary,
-                shape = MaterialTheme.shapes.small,
+                backgroundColor = Color.White,
+                shape = CircleShape,
             )
         }
     ) {
