@@ -4,6 +4,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,10 +22,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.my.composeapplication.R
 import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.SimpleListActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
@@ -121,11 +127,55 @@ private fun TodoListHoisting() {
             )
         }
     ) {
-        TodoList(
-            todoListState,
-            onCheck,
-            onRemove,
-            modifier = Modifier.padding(it)
+        SwipeRefreshView(todoListState) {
+            TodoList(
+                todoListState,
+                onCheck,
+                onRemove,
+                modifier = Modifier.padding(it)
+            )
+        }
+    }
+}
+
+@Composable
+fun SwipeRefreshView(
+    todoListState : TodoListState,
+    content : @Composable () -> Unit
+) {
+    val isRefresh by todoListState.viewModel.isRefreshing
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing = isRefresh),
+        onRefresh = {
+            todoListState.viewModel.onRefresh()
+        },
+        indicator = { state, trigger ->
+            SwipeRefreshIndicator(
+                // Pass the SwipeRefreshState + trigger through
+                state = state,
+                refreshTriggerDistance = trigger,
+                // Enable the scale animation
+                scale = true,
+                // Change the color and shape
+                backgroundColor = MaterialTheme.colorScheme.primary,
+                shape = MaterialTheme.shapes.small,
+            )
+        }
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun HeaderPager(modifier : Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(170.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+            contentDescription = null
         )
     }
 }
@@ -142,6 +192,9 @@ fun TodoList(
         modifier = modifier.fillMaxSize(),
         state = todoListState.scrollState
     ) {
+        item {
+            HeaderPager()
+        }
         items(list) { item ->
             TodoItemView(
                 item = item,
@@ -213,6 +266,12 @@ fun TodoItemView(
             Icon(imageVector = Icons.Default.Close, contentDescription = null)
         }
     }
+}
+
+@Preview(name = "HeaderPager")
+@Composable
+fun HeaderPagerPreview() {
+    HeaderPager()
 }
 
 @Preview(name = "BottomProgress")
