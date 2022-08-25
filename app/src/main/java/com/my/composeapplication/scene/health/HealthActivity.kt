@@ -34,10 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
-import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.*
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -50,6 +47,7 @@ import com.my.composeapplication.scene.health.data.TodoItem
 import com.my.composeapplication.viewmodel.HealthViewModel
 import com.skydoves.landscapist.glide.GlideImage
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 
 
 /**
@@ -183,38 +181,18 @@ fun SwipeRefreshView(
 @Composable
 fun HeaderPagerHoisting(todoListState : TodoListState, modifier : Modifier = Modifier) {
     val list = todoListState.viewModel.horizontalPagerItems
-    val stateKey = "pagerIndex"
-    var initParam = todoListState.viewModel.restoreStateParam(stateKey)
-    if (initParam !is PagerStateParam) {
-        initParam = PagerStateParam(stateKey, index = 0)
-    } else if (list.size <= initParam.index) {
-        initParam = PagerStateParam(stateKey, index = 0)
-    }
     HeaderPager(
         list = list,
-        stateKey = stateKey,
-        initPage = initParam
-    ) { key, index ->
-        todoListState.viewModel.saveStateParam(key, param = index)
-    }
+    )
 }
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HeaderPager(
     modifier : Modifier = Modifier,
-    list : List<PagerItem>,
-    stateKey : String,
-    initPage : PagerStateParam? = null,
-    onDispose : ((key : String, index : Int) -> Unit)? = null
+    list : List<PagerItem>
 ) {
-    val initIndex = initPage?.index ?: 0
-    val state = rememberForeverPagerState(
-        key = stateKey,
-        initialFirstVisibleItemIndex = initIndex
-    ) { key, index ->
-        onDispose?.invoke(key, index)
-    }
+    val state = rememberPagerState()
 
     val title by remember {
         derivedStateOf {
@@ -230,46 +208,71 @@ fun HeaderPager(
         Box(
             modifier = Modifier.fillMaxSize(),
         ) {
-            HorizontalPager(count = list.size, state = state) { page ->
-                if (list.size > page) {
-                    val item = list[page]
-                    GlideImage(
-                        imageModel = item.imageUrl,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.FillWidth
-                    )
-                }
-            }
-//            InfinityHorizontalPager(
-//                list = list,
-//            ) { modifier, page ->
-//                if (list.size > page) {
-//                    val item = list[page]
-//                    GlideImage(
-//                        imageModel = item.imageUrl,
-//                        modifier = modifier,
-//                        contentScale = ContentScale.FillWidth
-//                    )
-//                }
-//            }
-            if (title.isNotEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.BottomEnd
-                ) {
-                    PagerTitle(title = title)
-                }
-            }
-            if (list.isNotEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    PagerIndicator(pagerState = state)
-                }
-            }
+            HealthPager(
+                list = list,
+                title = title,
+                pagerState = state,
+            )
+//            HealthInfinityPager(list = list)
         }
     }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun HealthPager(
+    parentModifier : Modifier = Modifier,
+    list : List<PagerItem>,
+    title : String,
+    pagerState : PagerState,
+) {
+    HorizontalPager(count = list.size, state = pagerState) { page ->
+        if (list.size > page) {
+            val item = list[page]
+            GlideImage(
+                imageModel = item.imageUrl,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillWidth
+            )
+        }
+    }
+    if (title.isNotEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            PagerTitle(title = title)
+        }
+    }
+    if (list.isNotEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            PagerIndicator(pagerState = pagerState)
+        }
+    }
+}
+
+@Composable
+fun HealthInfinityPager(
+    parentModifier : Modifier = Modifier,
+    list : List<PagerItem>
+) {
+    InfinityHorizontalPager(
+        list = list,
+    ) { modifier, page ->
+        Log.e(HealthActivity::class.simpleName, "HeaderPager() page: $page")
+        if (list.size > page) {
+            val item = list[page]
+            GlideImage(
+                imageModel = item.imageUrl,
+                modifier = modifier,
+                contentScale = ContentScale.FillWidth
+            )
+        }
+    }
+
 }
 
 @OptIn(ExperimentalPagerApi::class)
@@ -486,7 +489,6 @@ fun HeaderPagerPreview() {
                 " 산이다."
             )
         ),
-        stateKey = "",
     )
 }
 

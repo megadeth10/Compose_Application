@@ -264,18 +264,18 @@ fun MeasureUnconstrainedViewWidth(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun InfinityHorizontalPager(
+fun infinityHorizontalPager(
     modifier : Modifier = Modifier,
     list : List<Any>,
     initIndex : Int = 0,
     pagerState : PagerState? = null,
     content : @Composable (Modifier, Int) -> Unit
-) {
+) : PagerState? {
     if (list.isEmpty()) {
-        return
+        return null
     }
     if (list.size <= initIndex) {
-        return
+        return null
     }
     // Display 10 items
     val pageCount = list.size
@@ -294,6 +294,7 @@ fun InfinityHorizontalPager(
         val page = (index - startIndex).floorMod(pageCount)
         content(Modifier.fillMaxSize(), page)
     }
+    return localPagerState
 }
 
 @OptIn(ExperimentalPagerApi::class)

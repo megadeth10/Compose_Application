@@ -54,6 +54,7 @@ fun rememberForeverLazyListState(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
+@Deprecated(message = "필요 없는거 같음 rotation시에 자동으로 인덱스 유지 되는거 확인함.")
 fun rememberForeverPagerState(
     key : String = "",
     initialFirstVisibleItemIndex : Int = 0,
