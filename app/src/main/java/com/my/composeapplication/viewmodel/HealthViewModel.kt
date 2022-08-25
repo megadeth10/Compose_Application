@@ -71,11 +71,9 @@ class HealthViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    var state = false
     private fun setPagerItem() {
         val currentItem = this._horizontalPagerItems
         currentItem.addAll(getInitPager())
-        state = true
     }
 
     fun moreList() {

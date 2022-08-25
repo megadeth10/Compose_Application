@@ -20,11 +20,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -235,4 +241,88 @@ fun LazyListState.OnEndItem(
                 if (it) loadMore()
             }
     }
+}
+
+// TODO viewToMeasure로 그려질 compose의 width를 계산
+@Composable
+fun MeasureUnconstrainedViewWidth(
+    viewToMeasure : @Composable () -> Unit,
+    content : @Composable (measuredWidth : Dp) -> Unit,
+) {
+    SubcomposeLayout { constraints ->
+        val measuredWidth = subcompose("viewToMeasure", viewToMeasure)[0]
+            .measure(Constraints()).width.toDp()
+
+        val contentPlaceable = subcompose("content") {
+            content(measuredWidth)
+        }[0].measure(constraints)
+        layout(contentPlaceable.width, contentPlaceable.height) {
+            contentPlaceable.place(0, 0)
+        }
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun InfinityHorizontalPager(
+    modifier : Modifier = Modifier,
+    list : List<Any>,
+    initIndex : Int = 0,
+    pagerState : PagerState? = null,
+    content : @Composable (Modifier, Int) -> Unit
+) {
+    if (list.isEmpty()) {
+        return
+    }
+    if (list.size <= initIndex) {
+        return
+    }
+    // Display 10 items
+    val pageCount = list.size
+    val maxSize = Int.MAX_VALUE
+
+    // We start the pager in the middle of the raw number of pages
+    val startIndex = (maxSize / 2) + initIndex
+    val localPagerState = pagerState ?: rememberPagerState(initialPage = startIndex)
+    HorizontalPager(
+        // Set the raw page count to a really large number
+        count = maxSize,
+        state = localPagerState,
+        modifier = modifier.fillMaxWidth()
+    ) { index ->
+        // We calculate the page from the given index
+        val page = (index - startIndex).floorMod(pageCount)
+        content(Modifier.fillMaxSize(), page)
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun InfinityHorizontalPager(
+    modifier : Modifier = Modifier,
+    list : List<Any>,
+    content : @Composable (Modifier, Int) -> Unit
+) {
+    // Display 10 items
+    val pageCount = list.size
+    val maxSize = Int.MAX_VALUE
+
+    // We start the pager in the middle of the raw number of pages
+    val startIndex = maxSize / 2
+    val localPagerState = rememberPagerState(initialPage = startIndex)
+    HorizontalPager(
+        // Set the raw page count to a really large number
+        count = maxSize,
+        state = localPagerState,
+        modifier = modifier.fillMaxWidth()
+    ) { index ->
+        // We calculate the page from the given index
+        val page = (index - startIndex).floorMod(pageCount)
+        content(Modifier.fillMaxSize(), page)
+    }
+}
+
+private fun Int.floorMod(other : Int) : Int = when (other) {
+    0 -> this
+    else -> this - floorDiv(other) * other
 }
