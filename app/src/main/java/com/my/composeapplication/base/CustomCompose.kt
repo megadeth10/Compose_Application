@@ -172,53 +172,6 @@ fun highlightView(body : @Composable () -> Unit) : (Boolean) -> Unit {
 }
 
 /**
- * Static field, contains all scroll values
- */
-
-data class ScrollStateParam(
-    val params : String = "",
-    val index : Int,
-    val scrollOffset : Int
-)
-
-/**
- * Save scroll state on all time.
- * @param key value for comparing screen
- * @param scrollParam arguments for find different between equals screen
- * @param initialFirstVisibleItemIndex see [LazyListState.firstVisibleItemIndex]
- * @param initialFirstVisibleItemScrollOffset see [LazyListState.firstVisibleItemScrollOffset]
- */
-@Composable
-fun rememberForeverLazyListState(
-    key : String = "",
-    initialFirstVisibleItemIndex : Int = 0,
-    initialFirstVisibleItemScrollOffset : Int = 0,
-    scrollParam : ScrollStateParam? = null,
-    onDispose : ((key : String, index : Int, offset : Int) -> Unit)? = null
-) : LazyListState {
-    val scrollState = rememberSaveable(saver = LazyListState.Saver) {
-        var savedIndex = initialFirstVisibleItemIndex
-        var savedOffset = initialFirstVisibleItemScrollOffset
-        scrollParam?.let {
-            savedIndex = it.index
-            savedOffset = it.scrollOffset
-        }
-        LazyListState(
-            savedIndex,
-            savedOffset
-        )
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            val lastIndex = scrollState.firstVisibleItemIndex
-            val lastOffset = scrollState.firstVisibleItemScrollOffset
-            onDispose?.invoke(key, lastIndex, lastOffset)
-        }
-    }
-    return scrollState
-}
-
-/**
  * Nested scroll 고정 영역과 삭제 영역을 구현함.
  */
 @Composable

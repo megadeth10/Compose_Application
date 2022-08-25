@@ -1,7 +1,7 @@
 package com.my.composeapplication.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.my.composeapplication.base.ScrollStateParam
+import com.my.composeapplication.base.data.ScrollStateParam
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

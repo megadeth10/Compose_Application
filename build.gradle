@@ -9,6 +9,7 @@ buildscript {
         android_lifecycle_v8_version = "2.5.1"
         landscapist_version = "1.6.1"
         swipe_refresh_version = "0.26.1-alpha"
+        pager_version = "0.26.1-alpha"
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"

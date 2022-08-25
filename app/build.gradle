@@ -118,4 +118,9 @@ dependencies {
 
     // swipe refresh ref: https://google.github.io/accompanist/swiperefresh/
     implementation "com.google.accompanist:accompanist-swiperefresh:$swipe_refresh_version"
+
+    // pager ref: https://google.github.io/accompanist/pager/
+    implementation "com.google.accompanist:accompanist-pager:$pager_version"
+    // If using indicators, also depend on
+    implementation "com.google.accompanist:accompanist-pager-indicators:$pager_version"
 }

@@ -4,7 +4,6 @@ import android.content.Intent
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,21 +21,25 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.my.composeapplication.R
 import com.my.composeapplication.base.*
+import com.my.composeapplication.base.data.PagerStateParam
 import com.my.composeapplication.scene.SimpleListActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
+import com.my.composeapplication.scene.health.data.PagerItem
 import com.my.composeapplication.scene.health.data.TodoItem
 import com.my.composeapplication.viewmodel.HealthViewModel
+import com.skydoves.landscapist.glide.GlideImage
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -170,16 +173,52 @@ fun SwipeRefreshView(
 }
 
 @Composable
-fun HeaderPager(modifier : Modifier = Modifier) {
+fun HeaderPagerHoisting(todoListState : TodoListState, modifier : Modifier = Modifier) {
+    val list = todoListState.viewModel.horizontalPagerItems
+    val stateKey = "pagerIndex"
+    var initParam = todoListState.viewModel.restoreStateParam(stateKey)
+    if (initParam !is PagerStateParam) {
+        initParam =  PagerStateParam(stateKey, index = 0)
+    } else if (list.size <= initParam.index) {
+        initParam = PagerStateParam(stateKey, index = 0)
+    }
+    HeaderPager(
+        list = list,
+        stateKey = stateKey,
+        initPage = initParam
+    ) { key, index ->
+        todoListState.viewModel.saveStateParam(key, param = index)
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun HeaderPager(
+    modifier : Modifier = Modifier,
+    list : List<PagerItem>,
+    stateKey : String,
+    initPage : PagerStateParam? = null,
+    onDispose : ((key : String, index : Int) -> Unit)? = null
+) {
+    val state = rememberForeverPagerState(
+        key = stateKey,
+        initialFirstVisibleItemIndex = initPage?.index ?: 0
+    ) { key, index ->
+        onDispose?.invoke(key, index)
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(170.dp)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = null
-        )
+        HorizontalPager(count = list.size, state = state) { page ->
+            val item = list[page]
+            GlideImage(
+                imageModel = item.imageUrl,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillWidth
+            )
+        }
     }
 }
 
@@ -196,7 +235,7 @@ fun TodoList(
         state = todoListState.scrollState
     ) {
         item {
-            HeaderPager()
+            HeaderPagerHoisting(todoListState)
         }
         items(list) { item ->
             TodoItemView(
@@ -274,7 +313,15 @@ fun TodoItemView(
 @Preview(name = "HeaderPager")
 @Composable
 fun HeaderPagerPreview() {
-    HeaderPager()
+    HeaderPager(
+        list = listOf(
+            PagerItem(
+                "https://cdn.pixabay.com/photo/2020/07/14/16/18/snow-5404785_960_720.jpg",
+                " 산이다."
+            )
+        ),
+        stateKey = "",
+    )
 }
 
 @Preview(name = "BottomProgress")

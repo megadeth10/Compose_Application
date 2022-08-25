@@ -44,6 +44,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.my.composeapplication.R
 import com.my.composeapplication.base.*
+import com.my.composeapplication.base.data.ScrollStateParam
 import com.my.composeapplication.scene.basiclayout.data.AlignBodyItem
 import com.my.composeapplication.viewmodel.LayoutComposeViewModel
 import com.skydoves.landscapist.rememberDrawablePainter
