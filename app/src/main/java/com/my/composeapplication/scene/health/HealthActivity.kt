@@ -43,6 +43,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.my.composeapplication.base.*
+import com.my.composeapplication.scene.CheckTaskActivity
 import com.my.composeapplication.scene.SimpleListActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.data.PagerItem
@@ -60,6 +61,11 @@ class HealthActivity : BaseComponentActivity() {
     private val viewModel by viewModels<HealthViewModel>()
     override fun getContent() : @Composable () -> Unit = {
         TodoListHoisting()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.e("LEE","onDestroy() HealthActivity")
     }
 }
 
@@ -106,7 +112,7 @@ private fun TodoListHoisting() {
 
     val context = (LocalContext.current as BaseComponentActivity).baseContext
     val goActivity : () -> Unit = {
-        context.startActivity(Intent(context, HealthActivity::class.java).apply {
+        context.startActivity(Intent(context, CheckTaskActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         })
     }
