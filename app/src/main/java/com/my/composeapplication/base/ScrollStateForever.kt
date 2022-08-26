@@ -52,9 +52,11 @@ fun rememberForeverLazyListState(
     return scrollState
 }
 
+/**
+ * Pager의 state를 화면 rotation은 문제 없으나, Navigation에서는 발생하여 해당 함수로 PagerState를 이용하면 됩
+ */
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-@Deprecated(message = "필요 없는거 같음 rotation시에 자동으로 인덱스 유지 되는거 확인함.")
 fun rememberForeverPagerState(
     key : String = "",
     initialFirstVisibleItemIndex : Int = 0,

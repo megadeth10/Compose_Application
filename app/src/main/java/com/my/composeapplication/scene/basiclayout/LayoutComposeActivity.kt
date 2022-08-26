@@ -42,10 +42,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import com.my.composeapplication.R
 import com.my.composeapplication.base.*
+import com.my.composeapplication.base.data.PagerStateParam
 import com.my.composeapplication.base.data.ScrollStateParam
 import com.my.composeapplication.scene.basiclayout.data.AlignBodyItem
+import com.my.composeapplication.scene.health.HealthPagerItem
 import com.my.composeapplication.viewmodel.LayoutComposeViewModel
 import com.skydoves.landscapist.rememberDrawablePainter
 import dagger.hilt.android.AndroidEntryPoint
@@ -113,6 +118,7 @@ private fun MainScreen() {
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
+                        HorizontalPage()
                         ScrollBoxesSmooth()
                         XmlDrawable()
                         SearchBar(modifier = Modifier.padding(8.dp))
@@ -158,6 +164,36 @@ private fun MainScreen() {
             } else {
                 BackButton(navController)
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun HorizontalPage(modifier : Modifier = Modifier, keyName: String = "pager") {
+    val viewModel : LayoutComposeViewModel = viewModel(LocalContext.current as BaseComponentActivity)
+    val list = viewModel.getInitPager()
+    val initIndex = viewModel.getScrollState(keyName)?.let {
+        if (it is PagerStateParam) {
+            it.index
+        } else {
+            0
+        }
+    } ?: 0
+    val pagerState = rememberForeverPagerState(
+        key = keyName,
+        initialFirstVisibleItemIndex = initIndex
+    ) { key, index ->
+        viewModel.setScrollState(key, PagerStateParam(key, index))
+    }
+    HorizontalPager(
+        modifier = modifier,
+        count = list.size,
+        state = pagerState
+    ) { page ->
+        if (list.size > page) {
+            val item = list[page]
+            HealthPagerItem(item = item)
         }
     }
 }
@@ -250,9 +286,16 @@ fun AlignBodyRow(
     val viewModel : LayoutComposeViewModel = viewModel(
         LocalContext.current as LayoutComposeActivity
     )
+    val scrollParam = viewModel.getScrollState(scrollStateKeyName)?.let {
+        if (it is ScrollStateParam) {
+            it
+        } else {
+            null
+        }
+    }
     val scrollState = rememberForeverLazyListState(
         key = scrollStateKeyName,
-        scrollParam = viewModel.getScrollState(scrollStateKeyName)
+        scrollParam = scrollParam
     ) { key, index, offset ->
         viewModel.setScrollState(key, ScrollStateParam(key, index, offset))
     }
