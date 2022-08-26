@@ -194,9 +194,10 @@ fun HeaderPager(
 ) {
     val initPage = 0
     val state = rememberInfinityPagerState(initPage)
+//    val state = rememberPagerState()
     val title by remember {
         derivedStateOf {
-            val page = (state.currentPage - initPage).floorMod(list.size)
+            val page = (state.currentPage - (Int.MAX_VALUE / 2)).floorMod(list.size)
             list.getOrNull(page)?.title ?: ""
         }
     }
@@ -206,33 +207,62 @@ fun HeaderPager(
             .fillMaxWidth()
             .height(170.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-//            HealthPager(
-//                list = list,
-//                pagerState = state,
-//            )
-            InfinityHorizontalPager(
-                modifier = modifier.height(170.dp),
-                list = list, pagerState = state
-            ) { modifier, item, page ->
-                HealthPagerItem(item = item)
-            }
-            if (title.isNotEmpty()) {
-                PagerTitle(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd),
-                    title = title
-                )
-            }
-//            if (list.isNotEmpty()) {
-//                PagerIndicator(
-//                    modifier = Modifier
-//                        .align(Alignment.BottomCenter),
-//                    pagerState = state
-//                )
-//            }
+//        SimpleHorizontalPager(list = list, title = title, pagerState = state)
+        InfinityHorizontalPager(list = list, title = title, pagerState = state)
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun InfinityHorizontalPager(
+    modifier : Modifier = Modifier,
+    list : List<PagerItem>,
+    title: String,
+    pagerState : PagerState,
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        InfinityHorizontalPager(
+            modifier = modifier.height(170.dp),
+            list = list, pagerState = pagerState
+        ) { modifier, item, page ->
+            HealthPagerItem(item = item)
+        }
+        if (title.isNotEmpty()) {
+            PagerTitle(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd),
+                title = title
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun SimpleHorizontalPager(
+    modifier : Modifier = Modifier,
+    list : List<PagerItem>,
+    title: String,
+    pagerState : PagerState,
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        HealthPager(
+            list = list,
+            pagerState = pagerState,
+        )
+        if (title.isNotEmpty()) {
+            PagerTitle(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd),
+                title = title
+            )
+        }
+        if (list.isNotEmpty()) {
+            PagerIndicator(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter),
+                pagerState = pagerState
+            )
         }
     }
 }
