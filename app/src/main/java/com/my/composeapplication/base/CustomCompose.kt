@@ -33,6 +33,7 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.launch
+import java.util.*
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -264,45 +265,11 @@ fun MeasureUnconstrainedViewWidth(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun infinityHorizontalPager(
+@Deprecated(message = "pagerState를 공유할 방법을 못 찾아서 재사용할 방법이 없을듯하다. 해당 함수를 사용하지 않고 복사해서 구현하자")
+fun <T>InfinityHorizontalPager(
     modifier : Modifier = Modifier,
-    list : List<Any>,
-    initIndex : Int = 0,
-    pagerState : PagerState? = null,
-    content : @Composable (Modifier, Int) -> Unit
-) : PagerState? {
-    if (list.isEmpty()) {
-        return null
-    }
-    if (list.size <= initIndex) {
-        return null
-    }
-    // Display 10 items
-    val pageCount = list.size
-    val maxSize = Int.MAX_VALUE
-
-    // We start the pager in the middle of the raw number of pages
-    val startIndex = (maxSize / 2) + initIndex
-    val localPagerState = pagerState ?: rememberPagerState(initialPage = startIndex)
-    HorizontalPager(
-        // Set the raw page count to a really large number
-        count = maxSize,
-        state = localPagerState,
-        modifier = modifier.fillMaxWidth()
-    ) { index ->
-        // We calculate the page from the given index
-        val page = (index - startIndex).floorMod(pageCount)
-        content(Modifier.fillMaxSize(), page)
-    }
-    return localPagerState
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-fun InfinityHorizontalPager(
-    modifier : Modifier = Modifier,
-    list : List<Any>,
-    content : @Composable (Modifier, Int) -> Unit
+    list : List<T>,
+    content : @Composable (Modifier, T, Int) -> Unit
 ) {
     // Display 10 items
     val pageCount = list.size
@@ -310,16 +277,19 @@ fun InfinityHorizontalPager(
 
     // We start the pager in the middle of the raw number of pages
     val startIndex = maxSize / 2
-    val localPagerState = rememberPagerState(initialPage = startIndex)
+    val pagerState = rememberPagerState(initialPage = startIndex)
     HorizontalPager(
         // Set the raw page count to a really large number
         count = maxSize,
-        state = localPagerState,
+        state = pagerState,
         modifier = modifier.fillMaxWidth()
     ) { index ->
         // We calculate the page from the given index
         val page = (index - startIndex).floorMod(pageCount)
-        content(Modifier.fillMaxSize(), page)
+        if (list.size > page) {
+            val item = list[page]
+            content(Modifier.fillMaxSize(), item, page)
+        }
     }
 }
 

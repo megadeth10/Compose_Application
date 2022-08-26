@@ -3,10 +3,11 @@ package com.my.composeapplication.scene.health
 import android.content.Intent
 import android.util.Log
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,9 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -38,8 +40,10 @@ import com.google.accompanist.pager.*
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.my.composeapplication.base.*
-import com.my.composeapplication.base.data.PagerStateParam
+import com.my.composeapplication.base.BaseComponentActivity
+import com.my.composeapplication.base.MeasureUnconstrainedViewWidth
+import com.my.composeapplication.base.OnEndItem
+import com.my.composeapplication.base.customScaffold
 import com.my.composeapplication.scene.SimpleListActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.data.PagerItem
@@ -47,7 +51,6 @@ import com.my.composeapplication.scene.health.data.TodoItem
 import com.my.composeapplication.viewmodel.HealthViewModel
 import com.skydoves.landscapist.glide.GlideImage
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 
 
 /**
@@ -65,9 +68,7 @@ class TodoListState(
     val viewModel : HealthViewModel,
     val allCheckState : MutableState<Boolean>,
     val scrollState : LazyListState
-) {
-
-}
+)
 
 @Composable
 fun rememberTodoListState(
@@ -182,6 +183,7 @@ fun SwipeRefreshView(
 fun HeaderPagerHoisting(todoListState : TodoListState, modifier : Modifier = Modifier) {
     val list = todoListState.viewModel.horizontalPagerItems
     HeaderPager(
+        modifier = modifier,
         list = list,
     )
 }
@@ -210,10 +212,25 @@ fun HeaderPager(
         ) {
             HealthPager(
                 list = list,
-                title = title,
                 pagerState = state,
             )
-//            HealthInfinityPager(list = list)
+//            InfinityHorizontalPager(list = list) { modifier, item, page ->
+//                HealthPagerItem(item = item)
+//            }
+            if (title.isNotEmpty()) {
+                PagerTitle(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd),
+                    title = title
+                )
+            }
+            if (list.isNotEmpty()) {
+                PagerIndicator(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter),
+                    pagerState = state
+                )
+            }
         }
     }
 }
@@ -221,58 +238,41 @@ fun HeaderPager(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HealthPager(
-    parentModifier : Modifier = Modifier,
+    modifier : Modifier = Modifier,
     list : List<PagerItem>,
-    title : String,
     pagerState : PagerState,
 ) {
-    HorizontalPager(count = list.size, state = pagerState) { page ->
+    HorizontalPager(
+        modifier = modifier,
+        count = list.size,
+        state = pagerState,
+    ) { page ->
         if (list.size > page) {
             val item = list[page]
-            GlideImage(
-                imageModel = item.imageUrl,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillWidth
+            HealthPagerItem(
+                item = item
             )
-        }
-    }
-    if (title.isNotEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            PagerTitle(title = title)
-        }
-    }
-    if (list.isNotEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            PagerIndicator(pagerState = pagerState)
         }
     }
 }
 
 @Composable
-fun HealthInfinityPager(
-    parentModifier : Modifier = Modifier,
-    list : List<PagerItem>
+fun HealthPagerItem(
+    modifier : Modifier = Modifier,
+    item : PagerItem,
 ) {
-    InfinityHorizontalPager(
-        list = list,
-    ) { modifier, page ->
-        Log.e(HealthActivity::class.simpleName, "HeaderPager() page: $page")
-        if (list.size > page) {
-            val item = list[page]
-            GlideImage(
-                imageModel = item.imageUrl,
-                modifier = modifier,
-                contentScale = ContentScale.FillWidth
-            )
-        }
+    val contentScale = if (
+        LocalConfiguration.current.screenWidthDp / LocalConfiguration.current.screenHeightDp < 1.0f
+    ) {
+        ContentScale.FillWidth
+    } else {
+        ContentScale.FillHeight
     }
-
+    GlideImage(
+        imageModel = item.imageUrl,
+        modifier = modifier,
+        contentScale = contentScale
+    )
 }
 
 @OptIn(ExperimentalPagerApi::class)
@@ -282,56 +282,67 @@ fun PagerIndicator(modifier : Modifier = Modifier, pagerState : PagerState) {
         pagerState = pagerState,
         modifier = modifier
             .padding(16.dp),
-        activeColor = Color.White
+        activeColor = Color.White,
+        indicatorShape = CircleShape.copy(
+
+        )
     )
 }
 
 @Composable
 fun PagerTitle(modifier : Modifier = Modifier, title : String) {
-    MeasureUnconstrainedViewWidth(
-        viewToMeasure = {
-            DisplayText(title = title)
-        }
-    ) { measuredWidth ->
-        val (animationState, changeAnimationState) = remember {
-            mutableStateOf(false)
-        }
-        var displayText by remember {
-            mutableStateOf(title)
-        }
-        if (displayText != title) {
-            changeAnimationState(true)
-            displayText = title
-        }
-        val color by animateColorAsState(
-            targetValue = if (animationState) Color.Red else Color.Gray,
-            animationSpec = tween(
-                durationMillis = 300,
-                delayMillis = 0,
-                easing = LinearEasing
-            ),
-            finishedListener = {
-                changeAnimationState(false)
+    Box(modifier = modifier) {
+        MeasureUnconstrainedViewWidth(
+            viewToMeasure = {
+                DisplayText(title = title)
             }
-        )
-        val offset by animateDpAsState(
-            targetValue = if (animationState) measuredWidth else 0.dp,
-            animationSpec = tween(
-                durationMillis = 300,
-                delayMillis = 0,
-                easing = LinearEasing
-            ),
-            finishedListener = {
+        ) { measuredWidth ->
+            val (animationState, changeAnimationState) = remember {
+                mutableStateOf(false)
             }
-        )
-        Log.e(HealthActivity::class.simpleName, "PagerTitle()  width: $measuredWidth")
-        DisplayText(
-            displayText,
-            color,
-            offset,
-            measuredWidth,
-            animationState
-        )
+            var displayText by remember {
+                mutableStateOf(title)
+            }
+            if (displayText != title) {
+                changeAnimationState(true)
+                displayText = title
+            }
+            val color by animateColorAsState(
+                targetValue = if (animationState) Color.Red else Color.Gray,
+                animationSpec = tween(
+                    durationMillis = 300,
+                    delayMillis = 0,
+                    easing = LinearEasing
+                ),
+                finishedListener = {
+                    changeAnimationState(false)
+                }
+            )
+//        val offset by animateDpAsState(
+//            targetValue = if (animationState) measuredWidth else 0.dp,
+//            animationSpec = tween(
+//                durationMillis = 300,
+//                delayMillis = 0,
+//                easing = LinearEasing
+//            ),
+//            finishedListener = {
+//            }
+//        )
+            Box(modifier = Modifier.width(measuredWidth)) {
+                val width = with(LocalDensity.current) {
+                    measuredWidth.roundToPx()
+                }
+                AnimatedVisibility(
+                    visible = !animationState,
+                    exit = slideOutHorizontally { width },
+                ) {
+                    DisplayText(
+                        displayText,
+                        color
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -339,24 +350,12 @@ fun PagerTitle(modifier : Modifier = Modifier, title : String) {
 fun DisplayText(
     title : String,
     color : Color,
-    offset : Dp,
-    measuredWidth : Dp,
-    animationState : Boolean
 ) {
-    if (animationState) {
-        DisplayText(
-            modifier = Modifier
-                .offset(offset)
-                .background(color.copy(alpha = .3f)),
-            title = title
-        )
-    } else {
-        DisplayText(
-            modifier = Modifier
-                .background(color.copy(alpha = .3f)),
-            title = title
-        )
-    }
+    DisplayText(
+        modifier = Modifier
+            .background(color.copy(alpha = .3f)),
+        title = title
+    )
 }
 
 @Composable
@@ -410,7 +409,7 @@ fun TodoList(
 @Composable
 fun BottomProgress(modifier : Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp),
         horizontalArrangement = Arrangement.Center
