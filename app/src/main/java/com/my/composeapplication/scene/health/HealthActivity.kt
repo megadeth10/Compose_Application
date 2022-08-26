@@ -12,6 +12,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -105,7 +106,9 @@ private fun TodoListHoisting() {
 
     val context = (LocalContext.current as BaseComponentActivity).baseContext
     val goActivity : () -> Unit = {
-        context.startActivity(Intent(context, SimpleListActivity::class.java))
+        context.startActivity(Intent(context, HealthActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        })
     }
 
     // TODO 해당 키가 변경될때만 하위 Scope를 실행함. Recomposition되어도 실행되지 않음, 컴포지션이 삭제되면 해당 Scope는 취소됨.
@@ -201,7 +204,6 @@ fun HeaderPager(
             list.getOrNull(page)?.title ?: ""
         }
     }
-
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -217,9 +219,14 @@ fun HeaderPager(
 fun InfinityHorizontalPager(
     modifier : Modifier = Modifier,
     list : List<PagerItem>,
-    title: String,
+    title : String,
     pagerState : PagerState,
 ) {
+    val indicatorState by remember {
+        derivedStateOf {
+            (pagerState.currentPage - (Int.MAX_VALUE / 2)).floorMod(list.size)
+        }
+    }
     Box(modifier = modifier.fillMaxSize()) {
         InfinityHorizontalPager(
             modifier = modifier.height(170.dp),
@@ -234,6 +241,15 @@ fun InfinityHorizontalPager(
                 title = title
             )
         }
+        if (list.isNotEmpty()) {
+            DotsIndicator(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(5.dp),
+                totalDots = list.size,
+                selectedIndex = indicatorState
+            )
+        }
     }
 }
 
@@ -242,7 +258,7 @@ fun InfinityHorizontalPager(
 fun SimpleHorizontalPager(
     modifier : Modifier = Modifier,
     list : List<PagerItem>,
-    title: String,
+    title : String,
     pagerState : PagerState,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -302,7 +318,9 @@ fun HealthPagerItem(
     }
     GlideImage(
         imageModel = item.imageUrl,
-        modifier = modifier,
+        modifier = modifier.clickable {
+            Log.e("LEE", "HealthPagerItem() name: ${item.title}")
+        },
         contentScale = contentScale
     )
 }

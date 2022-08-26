@@ -3,11 +3,9 @@ package com.my.composeapplication.base
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.rememberPagerState
 import com.my.composeapplication.base.data.PagerStateParam
 import com.my.composeapplication.base.data.ScrollStateParam
 

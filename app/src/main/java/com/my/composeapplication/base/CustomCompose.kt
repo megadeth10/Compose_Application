@@ -8,13 +8,18 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -298,14 +303,50 @@ fun <T> InfinityHorizontalPager(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun rememberInfinityPagerState(initialPage : Int = 0) : PagerState {
-    val maxSize = Int.MAX_VALUE
-
     // We start the pager in the middle of the raw number of pages
-    val startIndex = maxSize / 2
-    return rememberPagerState(initialPage = startIndex + initialPage)
+    return rememberPagerState(initialPage = (Int.MAX_VALUE / 2) + initialPage)
 }
 
 fun Int.floorMod(other : Int) : Int = when (other) {
     0 -> this
     else -> this - floorDiv(other) * other
+}
+
+@Composable
+fun DotsIndicator(
+    modifier : Modifier = Modifier,
+    totalDots : Int,
+    selectedIndex : Int,
+    selectedColor : Color = Color.White,
+    unSelectedColor : Color = Color.Gray,
+) {
+    LazyRow(
+        modifier = modifier
+            .wrapContentWidth()
+            .wrapContentHeight()
+            .clip(RoundedCornerShape(7.dp))
+            .background(Color.Gray.copy(alpha = .3f))
+            .padding(
+                vertical = 3.dp,
+                horizontal = 5.dp
+            )
+    ) {
+        items(totalDots) { index ->
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (index == selectedIndex) {
+                            selectedColor
+                        } else {
+                            unSelectedColor
+                        }
+                    )
+            )
+            if (index != totalDots - 1) {
+                Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+            }
+        }
+    }
 }
