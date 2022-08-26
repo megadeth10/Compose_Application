@@ -118,7 +118,7 @@ class HealthViewModel @Inject constructor() : ViewModel() {
 }
 
 private fun getInitList(startIndex : Int = 0) = List(20) { i -> TodoItem(i + startIndex, "Todo Item ${i + startIndex}") }
-private fun getInitPager(startIndex : Int = 0) = listOf<PagerItem>(
+private fun getInitPager() = listOf<PagerItem>(
     PagerItem("https://cdn.pixabay.com/photo/2020/07/14/16/18/snow-5404785_960_720.jpg", " 산이다."),
     PagerItem("https://cdn.pixabay.com/photo/2022/08/19/10/35/scooter-7396608_960_720.jpg", " 스쿠터 자전거"),
     PagerItem("https://cdn.pixabay.com/photo/2022/08/17/20/42/hot-air-balloon-7393437_960_720.jpg", " 열기구 카파도피아"),
