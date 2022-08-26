@@ -1,6 +1,7 @@
 package com.my.composeapplication.scene.health
 
 import android.content.Intent
+import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
@@ -40,10 +41,7 @@ import com.google.accompanist.pager.*
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.MeasureUnconstrainedViewWidth
-import com.my.composeapplication.base.OnEndItem
-import com.my.composeapplication.base.customScaffold
+import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.SimpleListActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.data.PagerItem
@@ -194,11 +192,12 @@ fun HeaderPager(
     modifier : Modifier = Modifier,
     list : List<PagerItem>
 ) {
-    val state = rememberPagerState()
-
+    val initPage = 0
+    val state = rememberInfinityPagerState(initPage)
     val title by remember {
         derivedStateOf {
-            list.getOrNull(state.currentPage)?.title ?: ""
+            val page = (state.currentPage - initPage).floorMod(list.size)
+            list.getOrNull(page)?.title ?: ""
         }
     }
 
@@ -210,13 +209,16 @@ fun HeaderPager(
         Box(
             modifier = Modifier.fillMaxSize(),
         ) {
-            HealthPager(
-                list = list,
-                pagerState = state,
-            )
-//            InfinityHorizontalPager(list = list) { modifier, item, page ->
-//                HealthPagerItem(item = item)
-//            }
+//            HealthPager(
+//                list = list,
+//                pagerState = state,
+//            )
+            InfinityHorizontalPager(
+                modifier = modifier.height(170.dp),
+                list = list, pagerState = state
+            ) { modifier, item, page ->
+                HealthPagerItem(item = item)
+            }
             if (title.isNotEmpty()) {
                 PagerTitle(
                     modifier = Modifier
@@ -224,13 +226,13 @@ fun HeaderPager(
                     title = title
                 )
             }
-            if (list.isNotEmpty()) {
-                PagerIndicator(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter),
-                    pagerState = state
-                )
-            }
+//            if (list.isNotEmpty()) {
+//                PagerIndicator(
+//                    modifier = Modifier
+//                        .align(Alignment.BottomCenter),
+//                    pagerState = state
+//                )
+//            }
         }
     }
 }

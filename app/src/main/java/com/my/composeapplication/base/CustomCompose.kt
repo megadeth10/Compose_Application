@@ -265,19 +265,19 @@ fun MeasureUnconstrainedViewWidth(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-@Deprecated(message = "pagerState를 공유할 방법을 못 찾아서 재사용할 방법이 없을듯하다. 해당 함수를 사용하지 않고 복사해서 구현하자")
-fun <T>InfinityHorizontalPager(
+fun <T> InfinityHorizontalPager(
     modifier : Modifier = Modifier,
     list : List<T>,
+    pagerState : PagerState,
     content : @Composable (Modifier, T, Int) -> Unit
 ) {
+    if (list.isEmpty()) {
+        return
+    }
     // Display 10 items
     val pageCount = list.size
     val maxSize = Int.MAX_VALUE
-
-    // We start the pager in the middle of the raw number of pages
     val startIndex = maxSize / 2
-    val pagerState = rememberPagerState(initialPage = startIndex)
     HorizontalPager(
         // Set the raw page count to a really large number
         count = maxSize,
@@ -285,15 +285,27 @@ fun <T>InfinityHorizontalPager(
         modifier = modifier.fillMaxWidth()
     ) { index ->
         // We calculate the page from the given index
-        val page = (index - startIndex).floorMod(pageCount)
-        if (list.size > page) {
-            val item = list[page]
-            content(Modifier.fillMaxSize(), item, page)
-        }
+        var page = (index - startIndex).floorMod(pageCount)
+        page = if (list.size > page) page else 0
+        val item = list[page]
+        content(Modifier.fillMaxSize(), item, page)
     }
 }
 
-private fun Int.floorMod(other : Int) : Int = when (other) {
+/**
+ * Infinity Pager 사용시에 사용
+ */
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun rememberInfinityPagerState(initialPage : Int = 0) : PagerState {
+    val maxSize = Int.MAX_VALUE
+
+    // We start the pager in the middle of the raw number of pages
+    val startIndex = maxSize / 2
+    return rememberPagerState(initialPage = startIndex + initialPage)
+}
+
+fun Int.floorMod(other : Int) : Int = when (other) {
     0 -> this
     else -> this - floorDiv(other) * other
 }
