@@ -8,7 +8,6 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -17,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,7 +38,6 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.launch
-import java.util.*
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -312,6 +311,9 @@ fun Int.floorMod(other : Int) : Int = when (other) {
     else -> this - floorDiv(other) * other
 }
 
+/**
+ * Infinity Pager Indicator
+ */
 @Composable
 fun DotsIndicator(
     modifier : Modifier = Modifier,
@@ -348,5 +350,45 @@ fun DotsIndicator(
                 Spacer(modifier = Modifier.padding(horizontal = 2.dp))
             }
         }
+    }
+}
+
+/**
+ * Snack Composable
+ */
+@Composable
+fun DefaultSnackbar(
+    snackbarHostState : SnackbarHostState,
+    modifier : Modifier = Modifier,
+    onDismiss : () -> Unit = { },
+    content: @Composable () -> Unit,
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        content()
+        SnackbarHost(
+            hostState = snackbarHostState,
+            snackbar = { data ->
+                Snackbar(
+                    modifier = Modifier.padding(16.dp),
+                    content = {
+                        Text(
+                            text = data.visuals.message,
+                        )
+                    },
+                    action = {
+                        data.visuals.actionLabel?.let { actionLabel ->
+                            TextButton(onClick = onDismiss) {
+                                Text(
+                                    text = actionLabel,
+                                )
+                            }
+                        }
+                    }
+                )
+            },
+            modifier = modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+        )
     }
 }
