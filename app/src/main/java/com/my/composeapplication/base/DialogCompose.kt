@@ -93,18 +93,8 @@ fun DefaultDialog(
     dialogState : DialogState,
     onDismiss : () -> Unit,
 ) {
-    Log.e("LEE","composition")
     val snackbarHostState by remember {
         mutableStateOf(SnackbarHostState())
-    }
-    LaunchedEffect(key1 = true) {
-        Log.e("LEE","LaunchedEffect")
-    }
-    DisposableEffect(key1 = true) {
-        onDispose {
-            Log.e("LEE","DisposableEffect")
-            snackbarHostState.currentSnackbarData?.dismiss()
-        }
     }
     if (dialogState.isShow) {
         Dialog(
