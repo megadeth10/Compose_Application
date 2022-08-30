@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -52,6 +53,12 @@ fun DefaultSnackbar(
                 .fillMaxWidth()
                 .align(Alignment.BottomStart)
         )
+    }
+
+    DisposableEffect(key1 = snackbarHostState) {
+        onDispose {
+            onDismiss()
+        }
     }
 }
 
