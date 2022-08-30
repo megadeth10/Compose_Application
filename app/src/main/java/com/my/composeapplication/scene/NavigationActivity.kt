@@ -2,9 +2,7 @@ package com.my.composeapplication.scene
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -17,13 +15,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.customScaffold
+import com.my.composeapplication.base.CustomScaffold
 import com.my.composeapplication.base.showSnackbar
 
 /**
  * Created by YourName on 2022/08/16.
  */
-private var snackbarHostState : SnackbarHostState? = null
+private var snackbarHostState : MutableState<SnackbarHostState>? = null
 
 class NavigationActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = {
@@ -39,7 +37,12 @@ class NavigationActivity : BaseComponentActivity() {
 @Composable
 fun NavScreen() {
     val navController = rememberNavController()
-    snackbarHostState = customScaffold {
+    snackbarHostState = remember {
+        mutableStateOf(SnackbarHostState())
+    }
+    CustomScaffold(
+        snackbarHostState = snackbarHostState!!
+    ) {
         NavHost(navController = navController, startDestination = "first") {
             composable("first") {
                 FirstScreen(navController)
@@ -84,7 +87,7 @@ fun FirstScreen(navController : NavHostController) {
                     keyboardController?.hide()
                     focusManager.clearFocus()
                     showSnackbar(
-                        snackbarHostState = snackbarHostState,
+                        snackbarHostState = snackbarHostState?.value,
                         message = "입력이 필요합니다.",
                         actionLabel = "닫기"
                     )

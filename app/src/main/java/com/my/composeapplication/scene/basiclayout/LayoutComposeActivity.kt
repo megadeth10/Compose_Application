@@ -72,7 +72,7 @@ class LayoutComposeActivity : BaseComponentActivity() {
     }
 }
 
-private var snackbarHostState : SnackbarHostState? = null
+private var snackbarHostState : MutableState<SnackbarHostState>? = null
 
 private val sampleData = listOf(
     AlignBodyItem(R.drawable.ic_baseline_sentiment_dissatisfied_24, "1111"),
@@ -99,7 +99,11 @@ private val bottomItems = listOf(
 @Composable
 private fun MainScreen() {
     val navController = rememberNavController()
-    snackbarHostState = customScaffold(
+    snackbarHostState = remember {
+        mutableStateOf(SnackbarHostState())
+    }
+    CustomScaffold(
+        snackbarHostState = snackbarHostState!!,
         bottomAppBar = { SootheBottomNavigation(bottomItems, navController) }
     ) {
         val backStackState = navController.currentBackStackEntryAsState()
@@ -160,7 +164,7 @@ private fun MainScreen() {
                 }
             }
             if (backStackState.value?.destination?.route == BottomNavigationScreens.Frankendroid.route) {
-                CloseToastHoisting(snackbarHost = snackbarHostState)
+                CloseToastHoisting(snackbarHost = snackbarHostState?.value)
             } else {
                 BackButton(navController)
             }

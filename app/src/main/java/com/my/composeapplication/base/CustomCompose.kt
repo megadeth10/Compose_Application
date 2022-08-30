@@ -42,21 +42,22 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun customScaffold(
+fun CustomScaffold(
     modifier : Modifier = Modifier,
+    snackbarHostState : State<SnackbarHostState> = remember {
+        mutableStateOf(SnackbarHostState())
+    },
     topAppbar : @Composable () -> Unit = {},
     bottomAppBar : @Composable () -> Unit = {},
     body : @Composable (PaddingValues) -> Unit
-) : SnackbarHostState {
-    val snackbarHostState = remember { SnackbarHostState() }
+) {
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(snackbarHostState.value) },
         topBar = topAppbar,
         content = body,
         bottomBar = bottomAppBar
     )
-    return snackbarHostState
 }
 
 /**

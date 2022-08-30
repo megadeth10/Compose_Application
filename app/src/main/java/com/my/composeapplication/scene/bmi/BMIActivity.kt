@@ -10,9 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -43,7 +41,7 @@ import kotlinx.coroutines.launch
  * Created by YourName on 2022/08/16.
  */
 
-private var snackbarHostState : SnackbarHostState? = null
+private var snackbarHostState : MutableState<SnackbarHostState>? = null
 
 @AndroidEntryPoint
 class BMIActivity : BaseComponentActivity() {
@@ -55,7 +53,7 @@ class BMIActivity : BaseComponentActivity() {
         NavHost(navController = appState.navController, startDestination = "input") {
             composable("input") {
                 MainScreenHoisting(appState)
-                CloseToastHoisting(snackbarHostState)
+                CloseToastHoisting(snackbarHostState?.value)
             }
             composable("result/{level}") {
                 val level = it.arguments?.getString("level")?.toInt() ?: 0
@@ -106,7 +104,7 @@ private fun MainScreenHoisting(appState : MainScreenState) {
             appState.goResult(level)
         } else {
             showSnackbar(
-                snackbarHostState = snackbarHostState,
+                snackbarHostState = snackbarHostState?.value,
                 message = "입력값을 확인해 주세요",
                 actionLabel = "닫기"
             )
@@ -142,7 +140,11 @@ fun MainScreen(
         }
         onResult()
     }
-    snackbarHostState = customScaffold(
+    snackbarHostState = remember {
+        mutableStateOf(SnackbarHostState())
+    }
+    CustomScaffold(
+        snackbarHostState = snackbarHostState!!,
         topAppbar = {
             CustomTopAppBar(title = "BMI Calculator")
         }

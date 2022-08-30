@@ -122,7 +122,7 @@ private fun TodoListHoisting() {
         Log.e(HealthActivity::class.simpleName, "TodoListHoisting() LaunchedEffect")
     }
 
-    customScaffold(
+    CustomScaffold(
         topAppbar = {
             CustomTopAppBar(
                 title = "Checkable List",

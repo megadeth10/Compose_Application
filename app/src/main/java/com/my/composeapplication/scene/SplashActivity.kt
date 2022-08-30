@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.customScaffold
+import com.my.composeapplication.base.CustomScaffold
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.HealthActivity
 
@@ -38,7 +38,7 @@ fun SplashScreen() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
         })
     }
-    customScaffold(
+    CustomScaffold(
         topAppbar = {
             CustomTopAppBar(title = "SplashActivity")
         }

@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.my.composeapplication.R
-import com.my.composeapplication.base.customScaffold
+import com.my.composeapplication.base.CustomScaffold
 import com.my.composeapplication.enum.BMIResult
 import com.my.composeapplication.viewmodel.BMIViewModel
 
@@ -38,7 +38,7 @@ fun ResultScreenHoisting(navController : NavHostController?, level : Int, viewMo
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(level : Int, onBack : () -> Unit) {
-    customScaffold(
+    CustomScaffold(
         topAppbar = {
             CustomTopAppBar(
                 title = stringResource(id = R.string.result),
