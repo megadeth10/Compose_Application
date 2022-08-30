@@ -1,5 +1,6 @@
 package com.my.composeapplication.base
 
+import android.view.WindowManager
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -28,6 +29,19 @@ abstract class BaseAlertViewModel : ViewModel() {
 
     private val _dialogState : MutableState<DialogState> = mutableStateOf(DialogState())
     val dialogState : State<DialogState> get() = this._dialogState
+
+    /**
+     * 키보드가 스넥바를 가리는 문제를 체크하기 위한 Activity InputMode Check
+     */
+    private var isAdjustInputMode: Boolean = false
+
+    /**
+     * Activity Input mode
+     */
+    fun setInputMode(mode:Int) {
+        isAdjustInputMode = mode == WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+    }
+    fun getInputMode() = this.isAdjustInputMode
 
     /**
      * Dialog 닫기
@@ -63,7 +77,7 @@ abstract class BaseAlertViewModel : ViewModel() {
         actionLabel : String? = null,
         withDismissAction : Boolean = false,
         duration : SnackbarDuration = SnackbarDuration.Short,
-        onResult: ((SnackbarResult) -> Unit)? = null
+        onResult : ((SnackbarResult) -> Unit)? = null
     ) {
         showSnackbar(
             snackbarHostState = snackbarState.value,

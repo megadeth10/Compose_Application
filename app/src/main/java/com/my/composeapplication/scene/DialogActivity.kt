@@ -1,5 +1,6 @@
 package com.my.composeapplication.scene
 
+import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
@@ -14,9 +15,9 @@ import com.my.composeapplication.R
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.DefaultDialog
 import com.my.composeapplication.base.DefaultSnackbar
-import com.my.composeapplication.base.showSnackbar
 import com.my.composeapplication.base.data.ChoiceDialogState
 import com.my.composeapplication.base.data.DialogState
+import com.my.composeapplication.base.showSnackbar
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.viewmodel.DialogViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +28,10 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class DialogActivity : BaseComponentActivity() {
     private val viewModel by viewModels<DialogViewModel>()
+    override fun onCreate(savedInstanceState : Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.setInputMode(window.attributes.softInputMode)
+    }
     override fun getContent() : @Composable () -> Unit = {
         DialogMainScreen()
     }
@@ -45,7 +50,8 @@ fun DialogMainScreen() {
         DefaultSnackbar(
             snackbarHostState = viewModel.snackbarState.value,
             onDismiss = viewModel::dismissSnackbar,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            isShowTop = !viewModel.getInputMode()
         ) {
             Column {
                 Button(

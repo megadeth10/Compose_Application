@@ -19,12 +19,13 @@ import kotlinx.coroutines.launch
 /**
  * Snack Composable
  * 문제점
- * 1. Box 내에서 정렬 위치가 최하단이 되지 않는 문제가 있음
+ * 1. adjustResize가 아닐때, 키보드 노출에 의한 표시 정렬 위치를 해결해야함.
  */
 @Composable
 fun DefaultSnackbar(
     snackbarHostState : SnackbarHostState,
     modifier : Modifier = Modifier,
+    isShowTop : Boolean = false,
     onDismiss : () -> Unit = { },
     content : @Composable () -> Unit,
 ) {
@@ -60,7 +61,13 @@ fun DefaultSnackbar(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
+                .align(
+                    if (isShowTop) {
+                        Alignment.TopCenter
+                    } else {
+                        Alignment.BottomCenter
+                    }
+                )
         )
     }
 
