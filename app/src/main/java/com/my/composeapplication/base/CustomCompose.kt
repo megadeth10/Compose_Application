@@ -29,13 +29,18 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.my.composeapplication.R
+import com.my.composeapplication.base.data.DialogState
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -361,7 +366,7 @@ fun DefaultSnackbar(
     snackbarHostState : SnackbarHostState,
     modifier : Modifier = Modifier,
     onDismiss : () -> Unit = { },
-    content: @Composable () -> Unit,
+    content : @Composable () -> Unit,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         content()

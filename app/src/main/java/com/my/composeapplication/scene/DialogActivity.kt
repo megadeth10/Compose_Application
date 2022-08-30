@@ -2,22 +2,18 @@ package com.my.composeapplication.scene
 
 import android.util.Log
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.my.composeapplication.base.BaseComponentActivity
+import com.my.composeapplication.base.DefaultDialog
 import com.my.composeapplication.base.DefaultSnackbar
+import com.my.composeapplication.base.data.ChoiceDialogState
+import com.my.composeapplication.base.data.DialogState
+import com.my.composeapplication.base.data.DialogType
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.viewmodel.DialogViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,23 +26,16 @@ import kotlinx.coroutines.launch
 class DialogActivity : BaseComponentActivity() {
     private val viewModel by viewModels<DialogViewModel>()
     override fun getContent() : @Composable () -> Unit = {
-        dialogSetFunction = makeDialog()
         DialogMainScreen()
-
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        dialogSetFunction = null
     }
 }
 
-private var dialogSetFunction : ((Boolean) -> Unit)? = null
 private var popupSetFunction : ((Boolean) -> Unit)? = null
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogMainScreen() {
+    val context = LocalContext.current
     val viewModel = viewModel<DialogViewModel>()
     val scope = rememberCoroutineScope()
     Column {
@@ -55,10 +44,42 @@ fun DialogMainScreen() {
             Column {
                 Button(
                     onClick = {
-                        dialogSetFunction?.invoke(true)
+                        viewModel.showDialog(
+                            DialogState(
+                                message = "안녕하세요",
+                                negativeButtonText = "닫기",
+                                positiveButtonText = "저장",
+                                onPositiveClick = {
+                                    Log.e(DialogActivity::class.simpleName, "저장 눌렀지?")
+                                }
+                            )
+                        )
                     }
                 ) {
                     Text(text = "Click show Dialog")
+                }
+                Button(
+                    onClick = {
+                        viewModel.showDialog(
+                            ChoiceDialogState(
+                                context = context,
+                                isShow = true,
+                                list = listOf("학교","종이","땡땡땡"),
+                                onPositiveClick = { title ->
+                                    if (title is String && title.isNotEmpty()) {
+                                        Log.e(DialogActivity::class.simpleName, "click ChoiceDialog clicked: $title")
+                                    } else {
+                                        scope.launch {
+                                            viewModel.showSnackbar("선택하시오")
+                                        }
+
+                                    }
+                                }
+                            )
+                        )
+                    }
+                ) {
+                    Text(text = "Click show Choice Dialog")
                 }
                 TextField(value = "", onValueChange = {})
                 Button(
@@ -93,29 +114,9 @@ fun DialogMainScreen() {
                 }
             }
         }
+        DefaultDialog(
+            dialogState = viewModel.dialogState.value,
+            onDismiss = viewModel::dismissDialog
+        )
     }
-}
-
-@Composable
-fun makeDialog() : (Boolean) -> Unit {
-    val (openDialog, showDialog) = remember { mutableStateOf(false) }
-    val dialogWidth = 200.dp
-    val dialogHeight = 50.dp
-
-    if (openDialog) {
-        Dialog(onDismissRequest = { showDialog(false) }) {
-            // Draw a rectangle shape with rounded corners inside the dialog
-            Box(
-                Modifier
-                    .size(dialogWidth, dialogHeight)
-                    .background(Color.White)
-            ) {
-                Text(text = "Dialog")
-                Button(onClick = { showDialog(false) }) {
-                    Text("Close")
-                }
-            }
-        }
-    }
-    return showDialog
 }

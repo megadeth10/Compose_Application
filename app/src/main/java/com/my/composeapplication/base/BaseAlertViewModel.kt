@@ -1,4 +1,4 @@
-package com.my.composeapplication.base.data
+package com.my.composeapplication.base
 
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -7,8 +7,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
+import com.my.composeapplication.base.data.DialogState
 
 /**
  * Created by YourName on 2022/08/29.
@@ -25,6 +24,28 @@ abstract class BaseAlertViewModel : ViewModel() {
      */
     private val _snackbarState : MutableState<SnackbarHostState> = mutableStateOf(SnackbarHostState())
     val snackbarState : State<SnackbarHostState> get() = this._snackbarState
+
+    private val _dialogState : MutableState<DialogState> = mutableStateOf(DialogState())
+    val dialogState : State<DialogState> get() = this._dialogState
+
+    /**
+     * Dialog 닫기
+     */
+    fun dismissDialog() {
+        val currentValue = DialogState()
+        currentValue.isShow = false
+        this._dialogState.value = currentValue
+    }
+
+    /**
+     * Dialog 열기
+     */
+    fun showDialog(
+        dialogState : DialogState
+    ) {
+        dialogState.isShow = true
+        this._dialogState.value = dialogState
+    }
 
     /**
      * Snackbar 닫기

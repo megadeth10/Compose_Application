@@ -8,4 +8,6 @@
     <string name="search">Search</string>
     <string name="body_section_title">align your body</string>
     <string name="favorite_section_title">favorite collections</string>
+    <string name="close">닫기</string>
+    <string name="confirm">확인</string>
 </resources>
