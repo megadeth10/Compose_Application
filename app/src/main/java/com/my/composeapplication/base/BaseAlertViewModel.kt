@@ -8,6 +8,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.my.composeapplication.base.data.DialogState
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Created by YourName on 2022/08/29.
@@ -57,18 +58,20 @@ abstract class BaseAlertViewModel : ViewModel() {
     /**
      * Snackbar 출력
      */
-    suspend fun showSnackbar(
+    fun showSnackbar(
         message : String,
         actionLabel : String? = null,
         withDismissAction : Boolean = false,
-        duration : SnackbarDuration = SnackbarDuration.Short
-    ): SnackbarResult {
-        dismissSnackbar()
-        return this@BaseAlertViewModel.snackbarState.value.showSnackbar(
+        duration : SnackbarDuration = SnackbarDuration.Short,
+        onResult: ((SnackbarResult) -> Unit)? = null
+    ) {
+        showSnackbar(
+            snackbarHostState = snackbarState.value,
             message = message,
             actionLabel = actionLabel,
             withDismissAction = withDismissAction,
-            duration = duration
+            duration = duration,
+            onResult = onResult
         )
     }
 }

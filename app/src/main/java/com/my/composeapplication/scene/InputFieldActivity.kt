@@ -18,9 +18,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.tooling.preview.Preview
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.customScaffold
+import com.my.composeapplication.base.showSnackbar
 import com.my.composeapplication.ui.theme.ComposeApplicationTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * Created by YourName on 2022/08/16.
@@ -59,7 +58,6 @@ private fun InputFieldHoisting(initValue : String = "") {
 @Composable
 fun InputField(modifier : Modifier = Modifier, initValue : String, valueChange : (String) -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val scope = rememberCoroutineScope()
 //    val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     Column(
@@ -81,13 +79,11 @@ fun InputField(modifier : Modifier = Modifier, initValue : String, valueChange :
             snackbarHostState?.let {
                 focusManager.clearFocus()
                 keyboardController?.hide()
-                scope.launch(Dispatchers.Main) {
-                    it.currentSnackbarData?.dismiss()
-                    it.showSnackbar(
-                        "Snackbar # ${initValue}",
-                        actionLabel = "닫기"
-                    )
-                }
+                showSnackbar(
+                    snackbarHostState = it,
+                    message = "Snackbar # ${initValue}",
+                    actionLabel = "닫기"
+                )
             }
         }) {
             Text("apply")

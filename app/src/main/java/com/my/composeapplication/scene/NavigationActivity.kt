@@ -18,8 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.customScaffold
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.my.composeapplication.base.showSnackbar
 
 /**
  * Created by YourName on 2022/08/16.
@@ -62,7 +61,6 @@ fun FirstScreen(navController : NavHostController) {
         mutableStateOf("")
     }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     Surface {
         Column(
@@ -83,14 +81,13 @@ fun FirstScreen(navController : NavHostController) {
                 if (text.isNotEmpty()) {
                     navController.navigate("third/$text")
                 } else {
-                    snackbarHostState?.let {
-                        it.currentSnackbarData?.dismiss()
-                        keyboardController?.hide()
-                        focusManager.clearFocus()
-                        scope.launch(Dispatchers.Main) {
-                            it.showSnackbar("입력이 필요합니다.", "닫기")
-                        }
-                    }
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                    showSnackbar(
+                        snackbarHostState = snackbarHostState,
+                        message = "입력이 필요합니다.",
+                        actionLabel = "닫기"
+                    )
                 }
             }) {
                 Text(text = "세번째 이동")

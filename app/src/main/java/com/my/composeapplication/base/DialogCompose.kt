@@ -5,11 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,10 +33,11 @@ import com.my.composeapplication.scene.DialogActivity
 fun ChoiceDialog(
     modifier : Modifier = Modifier,
     dialogState : ChoiceDialogState,
-    onDismiss : () -> Unit
+    onDismiss : () -> Unit,
+    snackbarHostState : SnackbarHostState
 ) {
     dialogState.list?.filterIsInstance<String>()?.let { list ->
-        var selected by remember {
+        var selected by rememberSaveable {
             mutableStateOf("")
         }
         val onClick : (String) -> Unit = { title ->
@@ -68,11 +71,14 @@ fun ChoiceDialog(
             }
         }
         DialogButtonRow(
+            snackbarHostState = snackbarHostState,
             negativeButtonText = dialogState.negativeButtonText,
-            onNegativeClick = dialogState.onNegativeClick,
+            onNegativeClick = { snackbarState ->
+                dialogState.onNegativeClick?.invoke(snackbarState)
+            },
             positiveButtonText = dialogState.positiveButtonText,
-            onPositiveClick = {
-                dialogState.onPositiveClick?.invoke(selected)
+            onPositiveClick = { snackbarState, data ->
+                dialogState.onPositiveClick?.invoke(snackbarState, selected)
             },
             onDismiss = onDismiss
         )
@@ -87,6 +93,19 @@ fun DefaultDialog(
     dialogState : DialogState,
     onDismiss : () -> Unit,
 ) {
+    Log.e("LEE","composition")
+    val snackbarHostState by remember {
+        mutableStateOf(SnackbarHostState())
+    }
+    LaunchedEffect(key1 = true) {
+        Log.e("LEE","LaunchedEffect")
+    }
+    DisposableEffect(key1 = true) {
+        onDispose {
+            Log.e("LEE","DisposableEffect")
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
     if (dialogState.isShow) {
         Dialog(
             onDismissRequest = { onDismiss() },
@@ -98,23 +117,30 @@ fun DefaultDialog(
                     .clip(RoundedCornerShape(10.dp))
                     .background(Color.White)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                DefaultSnackbar(
+                    snackbarHostState = snackbarHostState,
+                    onDismiss = { snackbarHostState.currentSnackbarData?.dismiss() }
                 ) {
-                    when (dialogState.useChildComposable) {
-                        DialogType.ChoiceDialog -> {
-                            ChoiceDialog(
-                                modifier = Modifier.fillMaxWidth(),
-                                dialogState = dialogState as ChoiceDialogState,
-                                onDismiss = onDismiss
-                            )
-                        }
-                        else -> {
-                            SimpleDialogLayout(
-                                dialogState = dialogState,
-                                onDismiss = onDismiss
-                            )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        when (dialogState.useChildComposable) {
+                            DialogType.ChoiceDialog -> {
+                                ChoiceDialog(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    dialogState = dialogState as ChoiceDialogState,
+                                    onDismiss = onDismiss,
+                                    snackbarHostState = snackbarHostState
+                                )
+                            }
+                            else -> {
+                                SimpleDialogLayout(
+                                    dialogState = dialogState,
+                                    onDismiss = onDismiss,
+                                    snackbarHostState = snackbarHostState
+                                )
+                            }
                         }
                     }
                 }
@@ -128,6 +154,7 @@ fun SimpleDialogLayout(
     modifier : Modifier = Modifier,
     dialogState : DialogState,
     onDismiss : () -> Unit,
+    snackbarHostState : SnackbarHostState,
 ) {
     Text(
         modifier = modifier
@@ -137,6 +164,7 @@ fun SimpleDialogLayout(
         color = MaterialTheme.colorScheme.secondary
     )
     DialogButtonRow(
+        snackbarHostState = snackbarHostState,
         negativeButtonText = dialogState.negativeButtonText,
         onNegativeClick = dialogState.onNegativeClick,
         positiveButtonText = dialogState.positiveButtonText,
@@ -147,10 +175,11 @@ fun SimpleDialogLayout(
 
 @Composable
 fun DialogButtonRow(
+    snackbarHostState : SnackbarHostState,
     negativeButtonText : String? = null,
-    onNegativeClick : (() -> Unit)? = null,
+    onNegativeClick : ((SnackbarHostState) -> Unit)? = null,
     positiveButtonText : String = "",
-    onPositiveClick : ((Any?) -> Unit)? = null,
+    onPositiveClick : ((SnackbarHostState, data : Any?) -> Unit)? = null,
     onDismiss : () -> Unit,
 ) {
     Row(
@@ -164,8 +193,7 @@ fun DialogButtonRow(
                     .weight(1f),
                 buttonText = it,
                 onClick = {
-                    onDismiss()
-                    onNegativeClick?.invoke()
+                    onNegativeClick?.invoke(snackbarHostState) ?: onDismiss()
                 }
             )
         }
@@ -175,7 +203,7 @@ fun DialogButtonRow(
                 .weight(1f),
             buttonText = positiveButtonText,
             onClick = {
-                onPositiveClick?.invoke(null) ?: onDismiss()
+                onPositiveClick?.invoke(snackbarHostState, null) ?: onDismiss()
             }
         )
     }
@@ -206,9 +234,9 @@ fun ChoiceDialogDialogPreview() {
         dialogState = ChoiceDialogState(
             isShow = true,
             list = listOf("학교", "종이", "땡땡땡"),
-            onPositiveClick = { title ->
-                if (title is String) {
-                    Log.e(DialogActivity::class.simpleName, "click ChoiceDialog clicked: $title")
+            onPositiveClick = { snackbarState, data ->
+                if (data is String) {
+                    Log.e(DialogActivity::class.simpleName, "click ChoiceDialog clicked: $data")
                 }
             },
             context = LocalContext.current

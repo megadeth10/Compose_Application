@@ -1,6 +1,7 @@
 package com.my.composeapplication.base.data
 
 import android.content.Context
+import androidx.compose.material3.SnackbarHostState
 import com.my.composeapplication.R
 
 /**
@@ -20,9 +21,9 @@ open class DialogState(
     val title : String? = null,
     val message : String = "",
     val negativeButtonText : String? = null,
-    val onNegativeClick : (() -> Unit)? = null,
+    val onNegativeClick : ((SnackbarHostState) -> Unit)? = null,
     val positiveButtonText : String = "",
-    val onPositiveClick : ((Any?) -> Unit)? = null,
+    val onPositiveClick : ((SnackbarHostState, data: Any?) -> Unit)? = null,
 )
 
 // 선택형 다이얼로그
@@ -32,8 +33,8 @@ class ChoiceDialogState(
     title : String? = null,
     message : String = "",
     val list : List<Any>? = null,
-    onNegativeClick : (() -> Unit)? = null,
-    onPositiveClick : ((Any?) -> Unit)? = null,
+    onNegativeClick : ((SnackbarHostState) -> Unit)? = null,
+    onPositiveClick : ((SnackbarHostState, data: Any?) -> Unit)? = null,
 ) : DialogState(
     isShow = isShow,
     useChildComposable = DialogType.ChoiceDialog,

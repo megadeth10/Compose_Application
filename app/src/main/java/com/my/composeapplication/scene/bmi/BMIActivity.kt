@@ -33,10 +33,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.CloseToastHoisting
-import com.my.composeapplication.base.customScaffold
-import com.my.composeapplication.base.highlightView
+import com.my.composeapplication.base.*
 import com.my.composeapplication.ui.theme.PurpleGrey80
 import com.my.composeapplication.viewmodel.BMIViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -100,8 +97,6 @@ fun rememberMainScreenState(
 private fun MainScreenHoisting(appState : MainScreenState) {
     val heightState = appState.viewModel.height.value.trim()
     val weightState = appState.viewModel.weight.value.trim()
-    val coroutineScope = rememberCoroutineScope()
-
 
     val bmiResult : () -> Unit = {
         appState.focusManager.clearFocus()
@@ -110,12 +105,11 @@ private fun MainScreenHoisting(appState : MainScreenState) {
             val level = (heightState.toInt().div(weightState.toInt()))
             appState.goResult(level)
         } else {
-            snackbarHostState?.let {
-                it.currentSnackbarData?.dismiss()
-                coroutineScope.launch {
-                    it.showSnackbar("입력값을 확인해 주세요", "닫기")
-                }
-            }
+            showSnackbar(
+                snackbarHostState = snackbarHostState,
+                message = "입력값을 확인해 주세요",
+                actionLabel = "닫기"
+            )
         }
     }
     MainScreen(
