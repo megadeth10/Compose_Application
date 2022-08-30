@@ -10,13 +10,12 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -49,13 +48,11 @@ fun ChoiceDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(30.dp)
                         .clickable { onClick(title) }
                         .padding(vertical = 5.dp),
                     verticalAlignment = CenterVertically
                 ) {
                     RadioButton(
-                        modifier = Modifier,
                         selected = selected == title,
                         onClick = null,
                     )
@@ -98,14 +95,12 @@ fun DefaultDialog(
             Box(
                 modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
                     .clip(RoundedCornerShape(10.dp))
                     .background(Color.White)
             ) {
                 Column(
-                    modifier = modifier
+                    modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
                 ) {
                     when (dialogState.useChildComposable) {
                         DialogType.ChoiceDialog -> {
@@ -161,13 +156,12 @@ fun DialogButtonRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(35.dp)
     ) {
         negativeButtonText?.let {
             DialogButton(
                 modifier = Modifier
-                    .weight(1f)
-                    .background(Color.Gray),
+                    .background(Color.Gray)
+                    .weight(1f),
                 buttonText = it,
                 onClick = {
                     onDismiss()
@@ -177,8 +171,8 @@ fun DialogButtonRow(
         }
         DialogButton(
             modifier = Modifier
-                .weight(1f)
-                .background(MaterialTheme.colorScheme.primary),
+                .background(MaterialTheme.colorScheme.primary)
+                .weight(1f),
             buttonText = positiveButtonText,
             onClick = {
                 onPositiveClick?.invoke(null) ?: onDismiss()
@@ -194,8 +188,9 @@ fun DialogButton(
     onClick : () -> Unit
 ) {
     TextButton(
-        modifier = modifier,
-        onClick = { onClick() }
+        modifier = modifier.height(40.dp),
+        onClick = { onClick() },
+        shape = RectangleShape
     ) {
         Text(
             text = buttonText,
@@ -207,7 +202,6 @@ fun DialogButton(
 @Preview(name = "ChoiceDialog")
 @Composable
 fun ChoiceDialogDialogPreview() {
-
     DefaultDialog(
         dialogState = ChoiceDialogState(
             isShow = true,
