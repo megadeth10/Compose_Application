@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
  */
 /**
  * Snack Composable
+ * 문제점
+ * 1. Box 내에서 정렬 위치가 최하단이 되지 않는 문제가 있음
  */
 @Composable
 fun DefaultSnackbar(
