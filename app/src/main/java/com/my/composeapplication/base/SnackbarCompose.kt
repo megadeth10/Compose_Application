@@ -34,24 +34,31 @@ fun DefaultSnackbar(
             hostState = snackbarHostState,
             snackbar = { data ->
                 Snackbar(
-                    modifier = Modifier.padding(16.dp),
-                    content = {
-                        Text(
-                            text = data.visuals.message,
-                        )
-                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     action = {
                         data.visuals.actionLabel?.let { actionLabel ->
-                            TextButton(onClick = onDismiss) {
+                            TextButton(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd),
+                                onClick = onDismiss
+                            ) {
                                 Text(
                                     text = actionLabel,
                                 )
                             }
                         }
                     }
-                )
+                ) {
+                    // Snackbar의 action과 text 영역이 곁치는 문제로 대략의 비율로 width 정의함.
+                    Text(
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        text = data.visuals.message,
+                    )
+                }
             },
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
         )
