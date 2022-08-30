@@ -51,7 +51,7 @@ fun DefaultSnackbar(
             },
             modifier = modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomStart)
+                .align(Alignment.BottomCenter)
         )
     }
 
