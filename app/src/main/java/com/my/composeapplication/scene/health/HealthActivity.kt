@@ -1,7 +1,6 @@
 package com.my.composeapplication.scene.health
 
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
@@ -30,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -38,13 +38,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.accompanist.pager.*
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.HorizontalPagerIndicator
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.placeholder.shimmer
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.CheckTaskActivity
-import com.my.composeapplication.scene.SimpleListActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.data.PagerItem
 import com.my.composeapplication.scene.health.data.TodoItem
@@ -65,7 +70,7 @@ class HealthActivity : BaseComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e("LEE","onDestroy() HealthActivity")
+        Log.e("LEE", "onDestroy() HealthActivity")
     }
 }
 
@@ -435,6 +440,9 @@ fun TodoList(
     modifier : Modifier = Modifier
 ) {
     val list = todoListState.viewModel.list
+    LaunchedEffect(key1 = true) {
+        todoListState.viewModel.moreList()
+    }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         state = todoListState.scrollState
@@ -442,23 +450,42 @@ fun TodoList(
         item {
             HeaderPagerHoisting(todoListState)
         }
-        items(list) { item ->
-            TodoItemView(
-                item = item,
-                onChecked = { isChecked ->
-                    onChecked(item, isChecked)
-                },
-                onClose = onClose
-            )
-        }
-        if (list.isNotEmpty()) {
-            item {
-                BottomProgress()
+        if (list.isEmpty()) {
+            items(listOf(null, null, null, null, null, null, null, null, null, null, null, null, null, null)) { item ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .padding(5.dp)
+                        .placeholder(
+                            visible = true,
+                            color = Color.Gray,
+                            shape = RectangleShape,
+                            highlight = PlaceholderHighlight.shimmer(Color.White)
+                        )
+                ) {}
+            }
+        } else {
+            items(list) { item ->
+                TodoItemView(
+                    item = item,
+                    onChecked = { isChecked ->
+                        onChecked(item, isChecked)
+                    },
+                    onClose = onClose
+                )
+            }
+            if (list.isNotEmpty()) {
+                item {
+                    BottomProgress()
+                }
             }
         }
     }
-    todoListState.scrollState.OnEndItem {
-        todoListState.viewModel.moreList()
+    if (list.isNotEmpty()) {
+        todoListState.scrollState.OnEndItem(threshold = 3) {
+            todoListState.viewModel.moreList()
+        }
     }
 }
 
@@ -534,18 +561,18 @@ fun TextLayoutPreview() {
     }
 }
 
-@Preview(name = "HeaderPager")
-@Composable
-fun HeaderPagerPreview() {
-    HeaderPager(
-        list = listOf(
-            PagerItem(
-                "https://cdn.pixabay.com/photo/2020/07/14/16/18/snow-5404785_960_720.jpg",
-                " 산이다."
-            )
-        ),
-    )
-}
+//@Preview(name = "HeaderPager")
+//@Composable
+//fun HeaderPagerPreview() {
+//    HeaderPager(
+//        list = listOf(
+//            PagerItem(
+//                "https://cdn.pixabay.com/photo/2020/07/14/16/18/snow-5404785_960_720.jpg",
+//                " 산이다."
+//            )
+//        ),
+//    )
+//}
 
 @Preview(name = "BottomProgress")
 @Composable

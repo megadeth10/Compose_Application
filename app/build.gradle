@@ -74,7 +74,6 @@ dependencies {
     implementation "androidx.compose.ui:ui-viewbinding:$compose_version"
     //preview ...
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
     implementation 'androidx.compose.material3:material3:1.0.0-alpha15'
     implementation "androidx.activity:activity-compose:1.5.1"
     // compose ConstraintLayout
@@ -123,4 +122,10 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager:$pager_version"
     // If using indicators, also depend on
     implementation "com.google.accompanist:accompanist-pager-indicators:$pager_version"
+
+    // placeholder ref: https://google.github.io/accompanist/placeholder/
+    // If you're using Material, use accompanist-placeholder-material
+    implementation "com.google.accompanist:accompanist-placeholder-material:$pager_version"
+    // Otherwise use the foundation version
+    implementation "com.google.accompanist:accompanist-placeholder:$pager_version"
 }
