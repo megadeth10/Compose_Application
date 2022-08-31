@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.viewmodel.ImageTestViewModel
+import com.my.composeapplication.R
 import com.skydoves.landscapist.glide.GlideImage
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -173,6 +174,7 @@ fun ImageScreen(
                 )
                 .background(Color.Black),
             contentScale = ContentScale.FillWidth,
+            previewPlaceholder = R.drawable.ic_launcher_foreground
         )
     }
 }
