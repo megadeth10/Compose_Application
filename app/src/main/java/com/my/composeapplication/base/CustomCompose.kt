@@ -276,9 +276,6 @@ fun <T> InfinityHorizontalPager(
     pagerState : PagerState,
     content : @Composable (Modifier, T, Int) -> Unit
 ) {
-    if (list.isEmpty()) {
-        return
-    }
     // Display 10 items
     val pageCount = list.size
     val maxSize = Int.MAX_VALUE
@@ -292,8 +289,10 @@ fun <T> InfinityHorizontalPager(
         // We calculate the page from the given index
         var page = (index - startIndex).floorMod(pageCount)
         page = if (list.size > page) page else 0
-        val item = list[page]
-        content(Modifier.fillMaxSize(), item, page)
+        if (list.size > page) {
+            val item = list[page]
+            content(Modifier.fillMaxSize(), item, page)
+        }
     }
 }
 
