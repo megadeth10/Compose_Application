@@ -16,12 +16,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -36,6 +36,9 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.placeholder.shimmer
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -237,7 +240,7 @@ fun LazyListState.OnEndItem(
     val isEndItem = remember {
         derivedStateOf {
             val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf true
-            lastVisibleItem.index - threshold == layoutInfo.totalItemsCount - (threshold + 1)
+            lastVisibleItem.index == layoutInfo.totalItemsCount - (threshold + 1)
         }
     }
     LaunchedEffect(key1 = isEndItem) {
@@ -284,7 +287,12 @@ fun <T> InfinityHorizontalPager(
         // Set the raw page count to a really large number
         count = maxSize,
         state = pagerState,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth().placeholder(
+            visible = list.isEmpty(),
+            color = Color.Gray,
+            shape = RectangleShape,
+            highlight = PlaceholderHighlight.shimmer(Color.White)
+        )
     ) { index ->
         // We calculate the page from the given index
         var page = (index - startIndex).floorMod(pageCount)
