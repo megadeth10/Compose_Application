@@ -96,54 +96,7 @@ fun PinchZoomScreen() {
             )
         }
     ) {
-        ConstraintLayout(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-        ) {
-            val (pinchView, box1, box2) = createRefs()
-            Box(
-                modifier = Modifier
-                    .constrainAs(pinchView) {
-                        top.linkTo(box1.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(box2.start)
-                        bottom.linkTo(parent.bottom)
-                    }
-                    .width(200.dp)
-                    .height(200.dp)
-            ) {
-                PinchImageScreen()
-            }
-            Box(modifier = Modifier
-                .constrainAs(box1) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    bottom.linkTo(pinchView.top)
-                    height= Dimension.fillToConstraints
-                }
-                .fillMaxWidth()
-                .background(Color.Red)
-            ) {
-                Text("aaaaa")
-            }
-            Box(modifier = Modifier
-                .constrainAs(box2) {
-                    top.linkTo(box1.bottom)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(pinchView.end)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                    height= Dimension.fillToConstraints
-                }
-                .background(Color.Green)
-            ) {
-                Button(onClick = { }) {
-                    Text(text = "Click")
-                }
-            }
-        }
+        PinchImageScreen(modifier = Modifier.padding(it))
     }
 }
 
@@ -336,11 +289,9 @@ fun PinchImageScreen(modifier : Modifier = Modifier) {
                         Log.e("LEE", "onDoubleTap()")
                         if (zoom == 1.0f) {
                             val targetScale = 2.0f
-                            // TODO offset 잡아야 함.
                             val x = screenSize.width / targetScale
                             val y = screenSize.height / targetScale
                             val offsetRect = Rect(0f, 0f, x, y)
-
                             resetTransform(
                                 scope = coroutineScope,
                                 state = state,
@@ -381,8 +332,8 @@ fun PinchImageScreen(modifier : Modifier = Modifier) {
                             val checkOffset = checkMinMax(offset, viewModel.size.value, zoom, screenSize)
                             if (checkOffset != null) {
                                 resetOffsetAnimationJob?.cancel()
-                                resetOffsetAnimationJob = resetOffset(
-                                    scope = coroutineScope, state = state, zoom = zoom, offset = checkOffset, angle = angle
+                                resetOffsetAnimationJob = resetTransform2(
+                                    scope = coroutineScope, state = state, offset = offset, targetOffset = checkOffset, zoom = zoom, angle = angle
                                 )
                             }
                         }
@@ -507,6 +458,37 @@ fun resetTransform(
 }
 
 /**
+ * TransformableState override한 animation함수
+ */
+fun resetTransform2(
+    scope : CoroutineScope, state : TransformableState, offset : Offset = Offset(0f, 0f), zoom : Float = 1f, angle : Float = 0f,
+    targetOffset : Offset = Offset(0f, 0f)
+) : Job {
+    return scope.launch {
+        state.animatePanBy2(offset, targetOffset, zoom, angle)
+    }
+}
+
+suspend fun TransformableState.animatePanBy2(
+    currentOffset : Offset,
+    targetOffset : Offset,
+    zoom : Float = 1f,
+    angle : Float = 0f,
+    animationSpec : AnimationSpec<Offset> = SpringSpec(stiffness = Spring.StiffnessLow),
+) {
+    var previous = currentOffset
+    transform {
+        AnimationState(
+            typeConverter = Offset.VectorConverter,
+            initialValue = previous
+        )
+            .animateTo(targetOffset, animationSpec) {
+                transformBy(panChange = this.value, zoomChange = zoom, rotationChange = angle)
+            }
+    }
+}
+
+/**
  * TODO 확장 로직 수정해야함.
  */
 suspend fun TransformableState.animateZoomByInit(
@@ -524,10 +506,4 @@ suspend fun TransformableState.animateZoomByInit(
             previous = this.value
         }
     }
-}
-
-@Preview(name = "PinchZoomScreen")
-@Composable
-fun PinchZoomScreenPreview() {
-    PinchZoomScreen()
 }
