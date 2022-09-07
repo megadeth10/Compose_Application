@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideOutHorizontally
@@ -115,6 +116,10 @@ private fun TodoListHoisting() {
         allCheckState = nextState
     }
 
+    val onExpended: (TodoItem, Boolean) -> Unit = { item, isCheck ->
+        todoListState.viewModel.setExpend(item, isCheck)
+    }
+
     val context = (LocalContext.current as BaseComponentActivity).baseContext
     val goActivity : () -> Unit = {
         context.startActivity(Intent(context, CheckTaskActivity::class.java).apply {
@@ -155,8 +160,9 @@ private fun TodoListHoisting() {
             SwipeRefreshView(todoListState) {
                 TodoList(
                     todoListState,
-                    onCheck,
-                    onRemove,
+                    onChecked = onCheck,
+                    onClose = onRemove,
+                    onExpended = onExpended
                 )
             }
         }
@@ -437,6 +443,7 @@ fun TodoList(
     todoListState : TodoListState,
     onChecked : (item : TodoItem, state : Boolean) -> Unit,
     onClose : (item : TodoItem) -> Unit,
+    onExpended : (item : TodoItem, state : Boolean) -> Unit,
     modifier : Modifier = Modifier
 ) {
     val list = todoListState.viewModel.list
@@ -472,7 +479,10 @@ fun TodoList(
                     onChecked = { isChecked ->
                         onChecked(item, isChecked)
                     },
-                    onClose = onClose
+                    onClose = onClose,
+                    onExpended = { isExpend ->
+                        onExpended(item, isExpend)
+                    }
                 )
             }
             if (list.isNotEmpty()) {
@@ -509,39 +519,84 @@ fun TodoItemView(
     item : TodoItem,
     onChecked : (state : Boolean) -> Unit,
     onClose : (item : TodoItem) -> Unit,
+    onExpended : (state : Boolean) -> Unit,
     modifier : Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
+            .clickable {
+                onExpended(!item.isExpend)
+            }
             .border(BorderStroke(1.dp, Color.Black))
             .padding(
                 horizontal = 10.dp, vertical = 5.dp
             )
     ) {
-        Text(
-            text = item.text,
-            modifier = Modifier
-                .height(30.dp)
-                .weight(1f),
-            maxLines = 1,
-            fontSize = 16.sp
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Checkbox(
-            checked = item.isChecked, onCheckedChange = onChecked,
-            modifier = Modifier.size(30.dp)
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        IconButton(
-            onClick = { onClose(item) },
-            modifier = Modifier.size(30.dp)
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
         ) {
-            Icon(imageVector = Icons.Default.Close, contentDescription = null)
+            Text(
+                text = item.text,
+                modifier = Modifier
+                    .height(30.dp)
+                    .weight(1f),
+                maxLines = 1,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Checkbox(
+                checked = item.isChecked, onCheckedChange = onChecked,
+                modifier = Modifier.size(30.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            IconButton(
+                onClick = { onClose(item) },
+                modifier = Modifier.size(30.dp)
+            ) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = null)
+            }
         }
+        RowSpacer(item.isExpend)
+        if (item.isExpend) {
+            DescriptionView(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .animateContentSize(),
+                content = item.description
+            )
+        }
+        RowSpacer(item.isExpend)
     }
 }
 
+@Composable
+fun RowSpacer(visible: Boolean) {
+    AnimatedVisibility(visible = visible) {
+        Spacer(modifier = Modifier.height(8.dp).background(Color.Gray))
+    }
+}
+
+@Composable
+fun DescriptionView(modifier : Modifier = Modifier, content:String) {
+    Surface(
+        modifier = modifier.padding(2.dp),
+        shadowElevation = 3.dp
+    ) {
+        Text(
+            text = content,
+            modifier = Modifier.fillMaxWidth().padding(2.dp)
+        )
+    }
+}
+
+
+@Preview(name = "DescriptionView")
+@Composable
+fun DescriptionViewPreview() {
+    DescriptionView(content = "adfasdfasd")
+}
 
 @Preview(name = "TextLayout")
 @Composable
@@ -583,5 +638,5 @@ fun BottomProgressPreview() {
 @Preview(name = "TodoItemView")
 @Composable
 fun TodoItemViewPreview() {
-    TodoItemView(TodoItem(1, "xxxx"), {}, {})
+    TodoItemView(TodoItem(1, "xxxx","adfasdfasdfadsf"), {}, {}, {})
 }

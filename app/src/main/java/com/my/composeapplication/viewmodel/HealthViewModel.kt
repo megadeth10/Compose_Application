@@ -65,6 +65,23 @@ class HealthViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun setExpend(item : TodoItem, state : Boolean) {
+        allExpend()
+        _list.find { it.id == item.id }?.let {
+            if (it.isExpend != state) {
+                it.isExpend = state
+            }
+        }
+    }
+
+    private fun allExpend() {
+        _list.forEach {
+            if (it.isExpend) {
+                it.isExpend = false
+            }
+        }
+    }
+
     private fun setProgress(newState : Boolean) {
         if (isProgress != newState) {
             isProgress = newState
@@ -78,6 +95,7 @@ class HealthViewModel @Inject constructor() : ViewModel() {
 
     fun moreList() {
         if (isProgress) {
+            Log.e(HealthViewModel::class.java.simpleName, "moreList() return end")
             return
         }
         this.setProgress(true)
@@ -117,7 +135,12 @@ class HealthViewModel @Inject constructor() : ViewModel() {
     }
 }
 
-private fun getInitList(startIndex : Int = 0) = List(20) { i -> TodoItem(i + startIndex, "Todo Item ${i + startIndex}") }
+private fun getInitList(startIndex : Int = 0) = List(20) { i ->
+    val id =  i + startIndex
+    val title = "Todo Item ${i + startIndex}"
+    val description = "$id\n$title              \n$title            \n$title "
+    TodoItem(id, title, description)
+}
 private fun getInitPager() = listOf<PagerItem>(
     PagerItem("https://cdn.pixabay.com/photo/2020/07/14/16/18/snow-5404785_960_720.jpg", " 산이다."),
     PagerItem("https://cdn.pixabay.com/photo/2022/08/19/10/35/scooter-7396608_960_720.jpg", " 스쿠터 자전거"),
