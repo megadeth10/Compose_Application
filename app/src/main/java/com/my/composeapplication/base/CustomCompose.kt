@@ -240,7 +240,7 @@ fun LazyListState.OnEndItem(
     val isEndItem = remember {
         derivedStateOf {
             val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf true
-            lastVisibleItem.index == layoutInfo.totalItemsCount - (threshold + 1)
+            lastVisibleItem.index >= layoutInfo.totalItemsCount - (threshold + 1)
         }
     }
     LaunchedEffect(key1 = isEndItem) {
