@@ -3,11 +3,14 @@ package com.my.composeapplication.scene
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -23,6 +26,7 @@ import com.my.composeapplication.R
 import com.my.composeapplication.base.*
 import com.my.composeapplication.base.data.ChoiceDialogState
 import com.my.composeapplication.base.data.DialogState
+import com.my.composeapplication.base.data.DropDownMenuState
 import com.my.composeapplication.base.data.PopupState
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.viewmodel.DialogViewModel
@@ -45,18 +49,18 @@ class DialogActivity : BaseComponentActivity() {
     }
 }
 
-private var popupSetFunction : ((Boolean) -> Unit)? = null
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogMainScreen() {
     val context = LocalContext.current
     val viewModel = viewModel<DialogViewModel>()
     val closeText = stringResource(id = R.string.close)
-    val dp1 = with(LocalDensity.current) {
-        1.dp.roundToPx()
-    }
-    Column {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .verticalScroll(scrollState)
+            .fillMaxSize()
+    ) {
         CustomTopAppBar(title = "DialogActivity")
         DefaultSnackbar(
             snackbarHostState = viewModel.snackbarState.value,
@@ -65,6 +69,7 @@ fun DialogMainScreen() {
             isShowTop = !viewModel.getInputMode()
         ) {
             Column {
+                DropDownMenuButton()
                 Button(
                     onClick = {
                         viewModel.showDialog(
@@ -154,12 +159,57 @@ fun DialogMainScreen() {
                     Text(text = "Click close Popup")
                 }
                 PopupViewUserContainer(modifier = Modifier.fillMaxWidth())
+
             }
         }
         DefaultDialog(
             dialogState = viewModel.dialogState.value,
             onDismiss = viewModel::dismissDialog
         )
+    }
+}
+
+@Composable
+fun DropDownMenuButton() {
+    val initText = stringResource(id = R.string.please_choice)
+    val optionList = LocalContext.current.resources.getStringArray(R.array.option)
+    var selectedText by rememberSaveable {
+        mutableStateOf(initText)
+    }
+    DropDownMenuCompose(
+        dropDownMenuState = DropDownMenuState(
+            menuList = optionList.toList()
+        ),
+        modifier = Modifier
+            .width(200.dp)
+            .height(50.dp)
+            .border(1.dp, Color.Black),
+        onMenuClick = {
+            selectedText = it
+        },
+        selectedItem = selectedText
+    ) { onClick, isShow ->
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    onClick.invoke(null)
+                }
+                .padding(3.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = selectedText
+            )
+            Icon(
+                imageVector = if (isShow)
+                    Icons.Default.ArrowDropUp
+                else
+                    Icons.Default.ArrowDropDown,
+                contentDescription = null
+            )
+        }
     }
 }
 
@@ -190,10 +240,12 @@ fun PopupViewUserContainer(modifier : Modifier = Modifier) {
     val dp1 = with(LocalDensity.current) {
         1.dp.roundToPx()
     }
-    Row(modifier = modifier
-        .fillMaxWidth()
-        .height(100.dp)
-        .background(Color.Cyan)) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .background(Color.Cyan)
+    ) {
         Text(
             text = "aaaaa",
             modifier = Modifier
@@ -203,12 +255,12 @@ fun PopupViewUserContainer(modifier : Modifier = Modifier) {
             color = Color.White
         )
         PopupViewCompose(
-            popupState = PopupState(content = "It's own me $counter", anchor = IntOffset(0,dp1 * 20))
+            popupState = PopupState(content = "It's own me $counter", anchor = IntOffset(0, dp1 * 20))
         ) {
 
             Button(onClick = {
                 counter += 1
-                it.invoke(PopupState(content = "It's own me $counter", anchor = IntOffset(0,dp1 * 20)))
+                it.invoke(PopupState(content = "It's own me $counter", anchor = IntOffset(0, dp1 * 20)))
                 Log.e("LEE", "counter: $counter")
             }) {
                 Text("click")

@@ -10,4 +10,5 @@
     <string name="favorite_section_title">favorite collections</string>
     <string name="close">닫기</string>
     <string name="confirm">확인</string>
+    <string name="please_choice">선택해 주세요.</string>
 </resources>
