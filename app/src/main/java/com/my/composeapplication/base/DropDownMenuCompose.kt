@@ -41,7 +41,8 @@ fun DropDownMenuCompose(
             onDismissRequest = {
                 val popup = dropDownShow.copy(isShow = false)
                 dropDownShow = popup
-            }
+            },
+            offset = dropDownMenuState.anchor,
         ) {
             dropDownMenuState.menuList.forEach { title ->
                 DropdownMenuItem(
