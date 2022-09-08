@@ -9,7 +9,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.my.composeapplication.base.data.DialogState
-import kotlinx.coroutines.CoroutineScope
+import com.my.composeapplication.base.data.PopupState
 
 /**
  * Created by YourName on 2022/08/29.
@@ -27,13 +27,36 @@ abstract class BaseAlertViewModel : ViewModel() {
     private val _snackbarState : MutableState<SnackbarHostState> = mutableStateOf(SnackbarHostState())
     val snackbarState : State<SnackbarHostState> get() = this._snackbarState
 
+    /**
+     * Dialog State
+     */
     private val _dialogState : MutableState<DialogState> = mutableStateOf(DialogState())
     val dialogState : State<DialogState> get() = this._dialogState
+
+    /**
+     * Popup State
+     */
+    private val _popState : MutableState<PopupState> = mutableStateOf(PopupState())
+    val popState : State<PopupState> get() = this._popState
 
     /**
      * 키보드가 스넥바를 가리는 문제를 체크하기 위한 Activity InputMode Check
      */
     private var isAdjustInputMode: Boolean = false
+
+    /**
+     * popupShow
+     */
+    fun showPopup(popupState : PopupState) {
+        this._popState.value = popupState
+    }
+
+    /**
+     * popupClose
+     */
+    fun dismissPopup() {
+        this._popState.value = PopupState(isShow = false)
+    }
 
     /**
      * Activity Input mode
@@ -47,9 +70,7 @@ abstract class BaseAlertViewModel : ViewModel() {
      * Dialog 닫기
      */
     fun dismissDialog() {
-        val currentValue = DialogState()
-        currentValue.isShow = false
-        this._dialogState.value = currentValue
+        this._dialogState.value = DialogState(isShow = false)
     }
 
     /**
