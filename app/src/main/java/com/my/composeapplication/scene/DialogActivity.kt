@@ -3,21 +3,27 @@ package com.my.composeapplication.scene
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.my.composeapplication.R
-import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.DefaultDialog
-import com.my.composeapplication.base.DefaultSnackbar
+import com.my.composeapplication.base.*
 import com.my.composeapplication.base.data.ChoiceDialogState
 import com.my.composeapplication.base.data.DialogState
-import com.my.composeapplication.base.showSnackbar
+import com.my.composeapplication.base.data.PopupState
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.viewmodel.DialogViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,8 +38,10 @@ class DialogActivity : BaseComponentActivity() {
         super.onCreate(savedInstanceState)
         viewModel.setInputMode(window.attributes.softInputMode)
     }
+
     override fun getContent() : @Composable () -> Unit = {
         DialogMainScreen()
+        DropDownView()
     }
 }
 
@@ -45,6 +53,9 @@ fun DialogMainScreen() {
     val context = LocalContext.current
     val viewModel = viewModel<DialogViewModel>()
     val closeText = stringResource(id = R.string.close)
+    val dp1 = with(LocalDensity.current) {
+        1.dp.roundToPx()
+    }
     Column {
         CustomTopAppBar(title = "DialogActivity")
         DefaultSnackbar(
@@ -127,6 +138,22 @@ fun DialogMainScreen() {
                 ) {
                     Text(text = "Click show snackbar")
                 }
+                PopupViewButton(
+                    buttonText = "Click show Popup",
+                    popupText = "adfadfasdfasdf"
+                )
+                PopupViewButton(
+                    buttonText = "Click show Popup22222",
+                    popupText = "adfadfasdfasdf\nasdfasdf"
+                )
+                Button(
+                    onClick = {
+                        viewModel.dismissPopup()
+                    }
+                ) {
+                    Text(text = "Click close Popup")
+                }
+                PopupViewUserContainer(modifier = Modifier.fillMaxWidth())
             }
         }
         DefaultDialog(
@@ -134,4 +161,122 @@ fun DialogMainScreen() {
             onDismiss = viewModel::dismissDialog
         )
     }
+}
+
+/**
+ * 중요 포인터 PopupView의 Anchor가 없는 이유는 Box로 감싸기만 하면 알아서 표시 된다.
+ */
+@Composable
+fun PopupViewButton(modifier : Modifier = Modifier, buttonText : String, popupText : String) {
+    PopupViewCompose(
+        modifier = modifier,
+        popupState = PopupState(content = popupText)
+    ) {
+        Button(
+            onClick = {
+                it.invoke(null)
+            }
+        ) {
+            Text(text = buttonText)
+        }
+    }
+}
+
+@Composable
+fun PopupViewUserContainer(modifier : Modifier = Modifier) {
+    var counter by remember {
+        mutableStateOf(1)
+    }
+    val dp1 = with(LocalDensity.current) {
+        1.dp.roundToPx()
+    }
+    Row(modifier = modifier
+        .fillMaxWidth()
+        .height(100.dp)
+        .background(Color.Cyan)) {
+        Text(
+            text = "aaaaa",
+            modifier = Modifier
+                .weight(1f)
+                .background(Color.Magenta)
+                .align(CenterVertically),
+            color = Color.White
+        )
+        PopupViewCompose(
+            popupState = PopupState(content = "It's own me $counter", anchor = IntOffset(0,dp1 * 20))
+        ) {
+
+            Button(onClick = {
+                counter += 1
+                it.invoke(PopupState(content = "It's own me $counter", anchor = IntOffset(0,dp1 * 20)))
+                Log.e("LEE", "counter: $counter")
+            }) {
+                Text("click")
+            }
+        }
+    }
+
+}
+
+@Composable
+fun DropDownView() {
+    var expanded by remember { mutableStateOf(false) }
+    val items = listOf("A", "B", "C", "D", "E", "F")
+    val disabledValue = "B"
+    var selectedIndex by remember { mutableStateOf(0) }
+    Box(
+        modifier = Modifier
+            .wrapContentSize(Alignment.TopStart)
+    ) {
+        Text(
+            items[selectedIndex], modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = { expanded = true })
+                .background(
+                    Color.Gray
+                )
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Red)
+        ) {
+            items.forEachIndexed { index, s ->
+                DropdownMenuItem(
+                    onClick = {
+                        selectedIndex = index
+                        expanded = false
+                    },
+                    text = {
+                        val disabledText = if (s == disabledValue) {
+                            " (Disabled)"
+                        } else {
+                            ""
+                        }
+                        Text(text = s + disabledText)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PopupViewHoisting(modifier : Modifier = Modifier, content : @Composable () -> Unit) {
+    val viewModel : DialogViewModel = viewModel(LocalContext.current as BaseComponentActivity)
+    PopupView(
+        modifier = modifier,
+        popupState = viewModel.popState.value,
+        onClose = viewModel::dismissPopup
+    )
+}
+
+@Preview(name = "PopupView")
+@Composable
+fun PopupViewPreview() {
+    PopupContentView(
+        content = "popupState.content",
+    )
 }
