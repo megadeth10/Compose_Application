@@ -18,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
  * Created by YourName on 2022/09/08.
  */
 @AndroidEntryPoint
-class RadioButtonActivity : BaseComponentActivity() {
+class GroupButtonActivity : BaseComponentActivity() {
     private val viewModel : RadioButtonViewModel by viewModels()
     override fun getContent() : @Composable () -> Unit = {
         RadioButtonScreen()
