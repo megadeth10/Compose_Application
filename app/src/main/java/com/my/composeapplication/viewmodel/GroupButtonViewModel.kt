@@ -8,14 +8,18 @@ import javax.inject.Inject
  * Created by YourName on 2022/09/08.
  */
 @HiltViewModel
-class RadioButtonViewModel @Inject constructor() : BaseAlertViewModel() {
-    /**
-     * SnackBar State
-     */
+class GroupButtonViewModel @Inject constructor() : BaseAlertViewModel() {
     private var _selected : List<String> = listOf()
     val selected : List<String> get() = this._selected
 
-    fun setSelected(list : List<String>) {
+    private var _checkBoxSelected : List<String> = listOf()
+    val checkBoxSelected : List<String> get() = this._checkBoxSelected
+
+    fun setCheckSelected(list : List<String>) {
+        this._checkBoxSelected = list
+    }
+
+    fun setRadioSelected(list : List<String>) {
         this._selected = list
     }
 }

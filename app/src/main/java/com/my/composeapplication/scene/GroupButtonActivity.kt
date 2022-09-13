@@ -1,6 +1,8 @@
 package com.my.composeapplication.scene
 
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -9,9 +11,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.my.composeapplication.R
 import com.my.composeapplication.base.BaseComponentActivity
+import com.my.composeapplication.base.CheckBoxGroupCompose
 import com.my.composeapplication.base.RadioGroupCompose
+import com.my.composeapplication.base.data.CheckGroupState
 import com.my.composeapplication.base.data.RadioGroupState
-import com.my.composeapplication.viewmodel.RadioButtonViewModel
+import com.my.composeapplication.viewmodel.GroupButtonViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -19,15 +23,20 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class GroupButtonActivity : BaseComponentActivity() {
-    private val viewModel : RadioButtonViewModel by viewModels()
+    private val viewModel : GroupButtonViewModel by viewModels()
     override fun getContent() : @Composable () -> Unit = {
-        RadioButtonScreen()
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            RadioButtonScreen()
+            CheckBoxGroupScreen()
+        }
     }
 }
 
 @Composable
 fun RadioButtonScreen() {
-    val viewModel : RadioButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
+    val viewModel : GroupButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
     val list = LocalContext.current.resources.getStringArray(R.array.option)
     RadioGroupCompose(
         modifier = Modifier.width(200.dp),
@@ -37,7 +46,22 @@ fun RadioButtonScreen() {
             isMulti = true
         ),
         onChangeSelected = {
-            viewModel.setSelected(it)
+            viewModel.setRadioSelected(it)
+        }
+    )
+}
+
+@Composable
+fun CheckBoxGroupScreen() {
+    val viewModel: GroupButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
+    val list = LocalContext.current.resources.getStringArray(R.array.option)
+    CheckBoxGroupCompose(
+        checkGroupState = CheckGroupState(
+            itemList = list.toList(),
+            checkedItems = viewModel.checkBoxSelected
+        ),
+        onCheckedChange = {
+            viewModel.setCheckSelected(it)
         }
     )
 }
