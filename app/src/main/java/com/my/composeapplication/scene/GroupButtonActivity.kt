@@ -10,9 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.my.composeapplication.R
-import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.CheckBoxGroupCompose
-import com.my.composeapplication.base.RadioGroupCompose
+import com.my.composeapplication.base.*
 import com.my.composeapplication.base.data.CheckGroupState
 import com.my.composeapplication.base.data.RadioGroupState
 import com.my.composeapplication.viewmodel.GroupButtonViewModel
@@ -30,6 +28,7 @@ class GroupButtonActivity : BaseComponentActivity() {
         ) {
             RadioButtonScreen()
             CheckBoxGroupScreen()
+            CheckBoxAllGroupScreen()
         }
     }
 }
@@ -55,13 +54,34 @@ fun RadioButtonScreen() {
 fun CheckBoxGroupScreen() {
     val viewModel: GroupButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
     val list = LocalContext.current.resources.getStringArray(R.array.option)
-    CheckBoxGroupCompose(
+    CheckboxGroupHoisting(
         checkGroupState = CheckGroupState(
             itemList = list.toList(),
             checkedItems = viewModel.checkBoxSelected
         ),
         onCheckedChange = {
             viewModel.setCheckSelected(it)
+        }
+    )
+}
+
+@Composable
+fun CheckBoxAllGroupScreen() {
+    val viewModel: GroupButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
+    val list = LocalContext.current.resources.getStringArray(R.array.option)
+    CheckboxGroupWithAllHoisting(
+        modifier = Modifier.width(200.dp),
+        groupTitle = "adlkjalkdjf;af",
+        checkGroupState = CheckGroupState(
+            itemList = list.toList(),
+            checkedItems = viewModel.checkBoxSelected
+        ),
+        onCheckedChange = {
+            viewModel.setCheckSelected(it)
+        },
+        isCheckAll = viewModel.checkBoxAllSelected,
+        onCheckedAllChange = {
+            viewModel.setCheckAll(it)
         }
     )
 }
