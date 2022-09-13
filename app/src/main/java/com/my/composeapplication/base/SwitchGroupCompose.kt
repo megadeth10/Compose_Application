@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.my.composeapplication.R
 import com.my.composeapplication.base.data.SwitchGroupState
 
@@ -32,7 +31,8 @@ fun SwitchGroupHoisting(
         modifier = modifier,
         state = switchState,
         onCheckChange = {
-            switchState = switchState.copy(
+            switchState = SwitchGroupState<String>(
+                itemList = switchState.itemList,
                 checkedItems = it
             )
             onCheckChange(it)
@@ -41,34 +41,26 @@ fun SwitchGroupHoisting(
 }
 
 @Composable
-fun SwitchGroupCompose(
+private fun SwitchGroupCompose(
     modifier : Modifier = Modifier,
     state : SwitchGroupState<String>,
-    onCheckChange : (List<String>) -> Unit = {}
+    onCheckChange : (List<String>) -> Unit = {},
 ) {
-    val onClick : (String) -> Unit = { selectedTitle ->
-        val hasItem = state.checkedItems.find { it == selectedTitle }
-        val list = if (hasItem?.isNotEmpty() == true) {
-            state.checkedItems.minus(selectedTitle)
-        } else {
-            state.checkedItems.plus(selectedTitle)
-        }
-        onCheckChange(list)
-    }
-    Column {
-        state.itemList.forEach { item ->
-            SwitchTextCompose(
-                modifier = modifier,
-                title = item,
-                onClick = onClick,
-                checkedItem = state.checkedItems
-            )
-        }
+    GroupItemCompose(
+        state = state,
+        onCheckChange = onCheckChange,
+    ) { item, onClick ->
+        SwitchTextCompose(
+            modifier = modifier,
+            title = item,
+            onClick = onClick,
+            checkedItem = state.checkedItems
+        )
     }
 }
 
 @Composable
-fun SwitchTextCompose(
+private fun SwitchTextCompose(
     modifier : Modifier = Modifier,
     title : String,
     onClick : (String) -> Unit,

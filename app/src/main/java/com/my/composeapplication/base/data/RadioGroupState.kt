@@ -3,15 +3,21 @@ package com.my.composeapplication.base.data
 /**
  * Created by YourName on 2022/09/08.
  */
-data class RadioGroupState<T>(
-    val menuList : List<T> = listOf(),
-    var selected : List<T> = listOf(),
+class RadioGroupState<T>(
+    itemList : List<T> = listOf(),
+    checkedItems : List<T> = listOf(),
     val isMulti : Boolean = false
+) : BaseGroupState<T>(
+    itemList = itemList,
+    checkedItems = checkedItems
 ) {
-    fun getSelect() : List<T> {
-        if (isMulti) {
-            return selected.toList()
+    companion object {
+        fun <T> copy(item : RadioGroupState<T>) : RadioGroupState<T> {
+            return RadioGroupState(
+                itemList = item.itemList,
+                checkedItems = item.checkedItems,
+                isMulti = item.isMulti
+            )
         }
-        return listOf(selected[0])
     }
 }

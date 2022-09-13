@@ -39,11 +39,11 @@ class GroupButtonActivity : BaseComponentActivity() {
 fun RadioButtonScreen() {
     val viewModel : GroupButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
     val list = LocalContext.current.resources.getStringArray(R.array.option)
-    RadioGroupCompose(
+    RadioGroupHoisting(
         modifier = Modifier.width(200.dp),
         radioGroupState = RadioGroupState(
-            menuList = list.toList(),
-            selected = viewModel.selected,
+            itemList = list.toList(),
+            checkedItems = viewModel.selected,
             isMulti = true
         ),
         onChangeSelected = {

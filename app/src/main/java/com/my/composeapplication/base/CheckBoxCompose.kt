@@ -39,7 +39,8 @@ fun CheckboxGroupWithAllHoisting(
         isCheckAll = allCheck,
         checkGroupState = checkList,
         onCheckedChange = {
-            checkList = checkList.copy(
+            checkList = CheckGroupState(
+                itemList = checkList.itemList,
                 checkedItems = it
             )
             onCheckedChange(it)
@@ -52,7 +53,7 @@ fun CheckboxGroupWithAllHoisting(
 }
 
 @Composable
-fun CheckboxGroupWithAllCompose(
+private fun CheckboxGroupWithAllCompose(
     modifier : Modifier = Modifier,
     groupTitle : String = "",
     isCheckAll : Boolean = false,
@@ -104,49 +105,37 @@ fun CheckboxGroupHoisting(
     CheckboxGroupCompose(
         modifier = modifier,
         checkGroupState = checkState,
-        setCheckState = {
-            checkState = it
-        },
-        onCheckedChange = onCheckedChange
+        onCheckedChange = {
+            checkState = CheckGroupState(
+                itemList = checkState.itemList,
+                checkedItems = it
+            )
+            onCheckedChange(it)
+        }
     )
 }
 
 @Composable
-fun CheckboxGroupCompose(
+private fun CheckboxGroupCompose(
     modifier : Modifier = Modifier,
     checkGroupState : CheckGroupState<String>,
-    setCheckState : (CheckGroupState<String>) -> Unit = {},
     onCheckedChange : (List<String>) -> Unit = {}
 ) {
-    val onClick : (String) -> Unit = { selectedTitle ->
-        val hasItem = checkGroupState.checkedItems.find { it == selectedTitle }
-        val list = if (hasItem?.isNotEmpty() == true) {
-            checkGroupState.checkedItems.minus(selectedTitle)
-        } else {
-            checkGroupState.checkedItems.plus(selectedTitle)
-        }
-        setCheckState(
-            checkGroupState.copy(
-                checkedItems = list
-            )
-        )
-        onCheckedChange(list)
-    }
-
-    Column {
-        checkGroupState.itemList.forEach {
-            CheckBoxTextCompose(
+    GroupItemCompose(
+        state = checkGroupState,
+        onCheckChange = onCheckedChange,
+    ) { item, onClick ->
+        CheckBoxTextCompose(
                 modifier = modifier,
-                title = it,
+                title = item,
                 onClick = onClick,
                 selected = checkGroupState.checkedItems
             )
-        }
     }
 }
 
 @Composable
-fun CheckBoxTextCompose(
+private fun CheckBoxTextCompose(
     modifier : Modifier = Modifier,
     title : String,
     onClick : (String) -> Unit,
@@ -173,7 +162,7 @@ fun CheckBoxTextCompose(
 }
 
 @Composable
-fun CheckGroupTitle(
+private fun CheckGroupTitle(
     modifier : Modifier = Modifier,
     title : String,
     onClick : (Boolean) -> Unit,

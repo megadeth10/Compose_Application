@@ -19,47 +19,65 @@ import com.my.composeapplication.R
  */
 
 @Composable
-fun RadioGroupCompose(
+fun RadioGroupHoisting(
     modifier : Modifier = Modifier,
     radioGroupState : RadioGroupState<String>,
     onChangeSelected : (List<String>) -> Unit = {},
 ) {
-    var radioButtonState by remember {
+    var radioState by remember {
         mutableStateOf(radioGroupState)
     }
-    val onClick : (String) -> Unit = { selectedTitle ->
-        radioButtonState = if (radioButtonState.isMulti) {
-            val hasItem = radioButtonState.selected.find { title ->
+    RadioGroupCompose(
+        modifier = modifier,
+        radioGroupState = radioState,
+        onChangeSelected = {
+            val newState = RadioGroupState.copy(radioState)
+            newState.checkedItems = it
+            radioState = newState
+            onChangeSelected(it)
+        }
+    )
+}
+
+@Composable
+private fun RadioGroupCompose(
+    modifier : Modifier = Modifier,
+    radioGroupState : RadioGroupState<String>,
+    onChangeSelected : (List<String>) -> Unit = {},
+) {
+    val localOnClick : (String) -> Unit = { selectedTitle ->
+        val currentList = if (radioGroupState.isMulti) {
+            val hasItem = radioGroupState.checkedItems.find { title ->
                 selectedTitle == title
             }
-            val newRadioButtonState = radioButtonState.copy()
+            val newRadioButtonState = RadioGroupState.copy(radioGroupState)
             if (hasItem?.isNotEmpty() == true) {
-                newRadioButtonState.selected = newRadioButtonState.selected.minus(selectedTitle)
-                newRadioButtonState
+                newRadioButtonState.checkedItems.minus(selectedTitle)
             } else {
-                newRadioButtonState.selected = newRadioButtonState.selected.plus(selectedTitle)
-                newRadioButtonState
+                newRadioButtonState.checkedItems.plus(selectedTitle)
             }
         } else {
-            val newRadioButtonState = radioButtonState.copy(selected = listOf(selectedTitle))
-            newRadioButtonState
+            listOf(selectedTitle)
         }
-        onChangeSelected(radioButtonState.selected)
+        onChangeSelected(currentList)
     }
-    Column {
-        radioButtonState.menuList.forEach {
-            RadioButtonTextView(
-                modifier = modifier,
-                title = it,
-                onClick = onClick,
-                selected = radioButtonState.selected
-            )
-        }
+
+    GroupItemCompose(
+        state = radioGroupState,
+        onCheckChange = onChangeSelected,
+        onClick = localOnClick
+    ) { item, onClick ->
+        RadioButtonTextView(
+            modifier = modifier,
+            title = item,
+            onClick = onClick,
+            selected = radioGroupState.checkedItems
+        )
     }
 }
 
 @Composable
-fun RadioButtonTextView(
+private fun RadioButtonTextView(
     modifier : Modifier = Modifier,
     title : String,
     onClick : (String) -> Unit,
@@ -90,9 +108,9 @@ fun RadioButtonTextView(
 @Composable
 fun RadioGroupPreview() {
     val list = LocalContext.current.resources.getStringArray(R.array.option)
-    RadioGroupCompose(
+    RadioGroupHoisting(
         radioGroupState = RadioGroupState(
-            menuList = list.toList(),
+            itemList = list.toList(),
         ),
         modifier = Modifier.width(200.dp)
     )
