@@ -63,6 +63,7 @@ private fun RadioGroupCompose(
     }
 
     GroupItemCompose(
+        modifier = modifier,
         state = radioGroupState,
         onCheckChange = onChangeSelected,
         onClick = localOnClick
@@ -87,8 +88,7 @@ private fun RadioButtonTextView(
         modifier = modifier
             .clickable {
                 onClick.invoke(title)
-            }
-            .height(30.dp),
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(

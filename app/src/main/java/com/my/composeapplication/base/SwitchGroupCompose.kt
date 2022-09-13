@@ -1,5 +1,6 @@
 package com.my.composeapplication.base
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Switch
@@ -7,8 +8,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.toRect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.my.composeapplication.R
 import com.my.composeapplication.base.data.SwitchGroupState
 
@@ -31,7 +40,7 @@ fun SwitchGroupHoisting(
         modifier = modifier,
         state = switchState,
         onCheckChange = {
-            switchState = SwitchGroupState<String>(
+            switchState = SwitchGroupState(
                 itemList = switchState.itemList,
                 checkedItems = it
             )
@@ -47,6 +56,7 @@ private fun SwitchGroupCompose(
     onCheckChange : (List<String>) -> Unit = {},
 ) {
     GroupItemCompose(
+        modifier = modifier,
         state = state,
         onCheckChange = onCheckChange,
     ) { item, onClick ->
@@ -70,7 +80,8 @@ private fun SwitchTextCompose(
         modifier = modifier
             .clickable {
                 onClick.invoke(title)
-            },
+            }
+            .padding(5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -79,7 +90,7 @@ private fun SwitchTextCompose(
         )
         Switch(
             checked = checkedItem.any { it == title },
-            onCheckedChange = null
+            onCheckedChange = null,
         )
     }
 }
@@ -94,5 +105,3 @@ fun SwitchGroupPreview() {
         )
     )
 }
-
-

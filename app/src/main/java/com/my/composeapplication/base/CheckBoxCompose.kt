@@ -122,6 +122,7 @@ private fun CheckboxGroupCompose(
     onCheckedChange : (List<String>) -> Unit = {}
 ) {
     GroupItemCompose(
+        modifier = modifier,
         state = checkGroupState,
         onCheckChange = onCheckedChange,
     ) { item, onClick ->
@@ -145,8 +146,7 @@ private fun CheckBoxTextCompose(
         modifier = modifier
             .clickable {
                 onClick.invoke(title)
-            }
-            .height(30.dp),
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
