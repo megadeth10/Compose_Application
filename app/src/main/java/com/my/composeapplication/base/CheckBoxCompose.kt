@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.my.composeapplication.R
 import com.my.composeapplication.base.data.CheckGroupState
 
@@ -25,7 +27,8 @@ fun CheckboxGroupWithAllHoisting(
     isCheckAll : Boolean = false,
     checkGroupState : CheckGroupState<String>,
     onCheckedChange : (List<String>) -> Unit = {},
-    onCheckedAllChange : (Boolean) -> Unit = {}
+    onCheckedAllChange : (Boolean) -> Unit = {},
+    reversLayout : Boolean = false
 ) {
     var allCheck by remember {
         mutableStateOf(isCheckAll)
@@ -48,7 +51,8 @@ fun CheckboxGroupWithAllHoisting(
         onCheckedAllChange = {
             allCheck = it
             onCheckedAllChange(it)
-        }
+        },
+        reversLayout = reversLayout
     )
 }
 
@@ -59,7 +63,8 @@ private fun CheckboxGroupWithAllCompose(
     isCheckAll : Boolean = false,
     checkGroupState : CheckGroupState<String>,
     onCheckedChange : (List<String>) -> Unit = {},
-    onCheckedAllChange : (Boolean) -> Unit = {}
+    onCheckedAllChange : (Boolean) -> Unit = {},
+    reversLayout : Boolean = false
 ) {
     val checkedChange : (List<String>) -> Unit = {
         val isAll = it.size == checkGroupState.itemList.size
@@ -88,6 +93,7 @@ private fun CheckboxGroupWithAllCompose(
             modifier = modifier,
             checkGroupState = checkGroupState,
             onCheckedChange = checkedChange,
+            reversLayout = reversLayout
         )
     }
 }
@@ -96,7 +102,8 @@ private fun CheckboxGroupWithAllCompose(
 fun CheckboxGroupHoisting(
     modifier : Modifier = Modifier,
     checkGroupState : CheckGroupState<String>,
-    onCheckedChange : (List<String>) -> Unit = {}
+    onCheckedChange : (List<String>) -> Unit = {},
+    reversLayout : Boolean = false
 ) {
     var checkState by remember {
         mutableStateOf(checkGroupState)
@@ -111,7 +118,8 @@ fun CheckboxGroupHoisting(
                 checkedItems = it
             )
             onCheckedChange(it)
-        }
+        },
+        reversLayout = reversLayout
     )
 }
 
@@ -119,7 +127,8 @@ fun CheckboxGroupHoisting(
 private fun CheckboxGroupCompose(
     modifier : Modifier = Modifier,
     checkGroupState : CheckGroupState<String>,
-    onCheckedChange : (List<String>) -> Unit = {}
+    onCheckedChange : (List<String>) -> Unit = {},
+    reversLayout : Boolean = false
 ) {
     GroupItemCompose(
         modifier = modifier,
@@ -127,11 +136,12 @@ private fun CheckboxGroupCompose(
         onCheckChange = onCheckedChange,
     ) { item, onClick ->
         CheckBoxTextCompose(
-                modifier = modifier,
-                title = item,
-                onClick = onClick,
-                selected = checkGroupState.checkedItems
-            )
+            modifier = modifier,
+            title = item,
+            onClick = onClick,
+            selected = checkGroupState.checkedItems,
+            reversLayout = reversLayout
+        )
     }
 }
 
@@ -140,23 +150,55 @@ private fun CheckBoxTextCompose(
     modifier : Modifier = Modifier,
     title : String,
     onClick : (String) -> Unit,
-    selected : List<String>
+    selected : List<String>,
+    reversLayout : Boolean = false
 ) {
-    Row(
+    ConstraintLayout(
         modifier = modifier
             .clickable {
                 onClick.invoke(title)
-            },
-        verticalAlignment = Alignment.CenterVertically
+            }
+            .padding(5.dp)
+            .fillMaxWidth()
     ) {
+        val (checkbox, text) = createRefs()
         Checkbox(
-            modifier = Modifier.size(30.dp),
+            modifier = Modifier
+                .size(30.dp)
+                .constrainAs(checkbox) {
+                    var startLink = parent.start
+                    var endLink = text.start
+                    if (reversLayout) {
+                        startLink = text.end
+                        endLink = parent.end
+                    }
+
+                    start.linkTo(startLink)
+                    end.linkTo(endLink)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                },
             checked = selected.any { it == title },
             onCheckedChange = null
         )
         Text(
             text = title,
-            modifier = Modifier.wrapContentWidth()
+            modifier = Modifier
+                .constrainAs(text) {
+                    width = Dimension.fillToConstraints
+                    height = Dimension.wrapContent
+                    var startLink = checkbox.end
+                    var endLink = parent.end
+                    if (reversLayout) {
+                        startLink = parent.start
+                        endLink = checkbox.start
+                    }
+
+                    start.linkTo(startLink)
+                    end.linkTo(endLink)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                }
         )
     }
 }
@@ -173,6 +215,7 @@ private fun CheckGroupTitle(
             .clickable {
                 onClick.invoke(!selected)
             }
+            .padding(5.dp)
             .height(30.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -201,6 +244,18 @@ fun CheckBoxGroupPreview() {
         checkGroupState = CheckGroupState(
             itemList = list.toList()
         )
+    )
+}
+
+@Preview(name = "CheckBoxGroupReverse")
+@Composable
+fun CheckBoxGroupRevPreview() {
+    val list = LocalContext.current.resources.getStringArray(R.array.option)
+    CheckboxGroupCompose(
+        checkGroupState = CheckGroupState(
+            itemList = list.toList()
+        ),
+        reversLayout = true
     )
 }
 

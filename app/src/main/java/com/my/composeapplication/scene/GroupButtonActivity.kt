@@ -1,9 +1,12 @@
 package com.my.composeapplication.scene
 
 import androidx.activity.viewModels
+import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,8 +27,10 @@ import dagger.hilt.android.AndroidEntryPoint
 class GroupButtonActivity : BaseComponentActivity() {
     private val viewModel : GroupButtonViewModel by viewModels()
     override fun getContent() : @Composable () -> Unit = {
+        val scrollableState = rememberScrollState()
         Column(
             modifier = Modifier.fillMaxWidth()
+                .verticalScroll(scrollableState),
         ) {
             RadioButtonScreen()
             CheckBoxGroupScreen()
@@ -48,7 +53,7 @@ fun RadioButtonScreen() {
         ),
         onChangeSelected = {
             viewModel.setRadioSelected(it)
-        }
+        },
     )
 }
 
@@ -64,7 +69,7 @@ fun CheckBoxGroupScreen() {
         ),
         onCheckedChange = {
             viewModel.setCheckSelected(it)
-        }
+        },
     )
 }
 
@@ -85,7 +90,7 @@ fun CheckBoxAllGroupScreen() {
         isCheckAll = viewModel.checkBoxAllSelected,
         onCheckedAllChange = {
             viewModel.setCheckAll(it)
-        }
+        },
     )
 }
 
@@ -102,6 +107,7 @@ fun SwitchGroupScreen() {
         ),
         onCheckChange = {
             viewModel.setCheckSelected(it)
-        }
+        },
+        reversLayout = false
     )
 }
