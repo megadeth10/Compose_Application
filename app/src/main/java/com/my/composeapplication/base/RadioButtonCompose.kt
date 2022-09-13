@@ -19,7 +19,7 @@ import com.my.composeapplication.R
  */
 
 @Composable
-fun RadioGroupView(
+fun RadioGroupCompose(
     modifier : Modifier = Modifier,
     radioGroupState : RadioGroupState<String>,
     onChangeSelected : (List<String>) -> Unit = {},
@@ -90,7 +90,7 @@ fun RadioButtonTextView(
 @Composable
 fun RadioGroupPreview() {
     val list = LocalContext.current.resources.getStringArray(R.array.option)
-    RadioGroupView(
+    RadioGroupCompose(
         radioGroupState = RadioGroupState(
             menuList = list.toList(),
         ),
