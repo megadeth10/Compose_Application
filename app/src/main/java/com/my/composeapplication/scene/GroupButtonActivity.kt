@@ -13,6 +13,7 @@ import com.my.composeapplication.R
 import com.my.composeapplication.base.*
 import com.my.composeapplication.base.data.CheckGroupState
 import com.my.composeapplication.base.data.RadioGroupState
+import com.my.composeapplication.base.data.SwitchGroupState
 import com.my.composeapplication.viewmodel.GroupButtonViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,6 +30,7 @@ class GroupButtonActivity : BaseComponentActivity() {
             RadioButtonScreen()
             CheckBoxGroupScreen()
             CheckBoxAllGroupScreen()
+            SwitchGroupScreen()
         }
     }
 }
@@ -55,6 +57,7 @@ fun CheckBoxGroupScreen() {
     val viewModel: GroupButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
     val list = LocalContext.current.resources.getStringArray(R.array.option)
     CheckboxGroupHoisting(
+        modifier = Modifier.width(200.dp),
         checkGroupState = CheckGroupState(
             itemList = list.toList(),
             checkedItems = viewModel.checkBoxSelected
@@ -70,7 +73,7 @@ fun CheckBoxAllGroupScreen() {
     val viewModel: GroupButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
     val list = LocalContext.current.resources.getStringArray(R.array.option)
     CheckboxGroupWithAllHoisting(
-        modifier = Modifier.width(200.dp),
+        modifier = Modifier.fillMaxWidth(),
         groupTitle = "adlkjalkdjf;af",
         checkGroupState = CheckGroupState(
             itemList = list.toList(),
@@ -82,6 +85,23 @@ fun CheckBoxAllGroupScreen() {
         isCheckAll = viewModel.checkBoxAllSelected,
         onCheckedAllChange = {
             viewModel.setCheckAll(it)
+        }
+    )
+}
+
+@Composable
+fun SwitchGroupScreen() {
+    val viewModel: GroupButtonViewModel = viewModel(LocalContext.current as BaseComponentActivity)
+    val list = LocalContext.current.resources.getStringArray(R.array.option)
+
+    SwitchGroupHoisting(
+        modifier = Modifier.width(200.dp),
+        switchGroupState = SwitchGroupState(
+            itemList = list.toList(),
+            checkedItems = viewModel.checkBoxSelected
+        ),
+        onCheckChange = {
+            viewModel.setCheckSelected(it)
         }
     )
 }
