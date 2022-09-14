@@ -82,7 +82,7 @@ fun SimpleList() {
                     CustomTopAppBar(title = "BIM Calculator", modifier = Modifier
                         .height(height)
                         .offset { IntOffset(x = 0, y = offsetPx) })
-                }) {
+                }) { paddingValue, setOffset ->
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()

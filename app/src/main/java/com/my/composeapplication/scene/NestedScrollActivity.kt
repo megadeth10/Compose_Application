@@ -6,21 +6,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.NestedScrollCompose
-import kotlin.math.roundToInt
 
 /**
  * Created by YourName on 2022/08/19.
@@ -42,8 +34,8 @@ fun NestedScrollScreen() {
         fixedContainer = { height, offsetPx ->
             NestedFixedScreen(height, offsetPx)
         }
-    ) {
-        LazyColumn(contentPadding = PaddingValues(top = it)) {
+    ) { paddingValue, setOffset ->
+        LazyColumn(contentPadding = PaddingValues(top = paddingValue)) {
             items(100) { index ->
                 Text(
                     "I'm item $index", modifier = Modifier

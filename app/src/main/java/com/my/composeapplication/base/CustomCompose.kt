@@ -5,14 +5,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -21,14 +29,19 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -174,16 +187,38 @@ fun highlightView(body : @Composable () -> Unit) : (Boolean) -> Unit {
     return setHighLight
 }
 
+// TODO Infinity List Compose 추가함.
+@Composable
+fun LazyListState.OnEndItem(
+    threshold : Int = 0,
+    loadMore : () -> Unit
+) {
+    val isEndItem = remember {
+        derivedStateOf {
+            val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf true
+            lastVisibleItem.index >= layoutInfo.totalItemsCount - (threshold + 1)
+        }
+    }
+    LaunchedEffect(key1 = isEndItem) {
+        snapshotFlow { isEndItem.value }
+            .collect {
+                // if should load more, then invoke loadMore
+                if (it) loadMore()
+            }
+    }
+}
+
 /**
  * Nested scroll 고정 영역과 삭제 영역을 구현함.
  */
 @Composable
 fun NestedScrollCompose(
     toolbarHeight : Dp = 48.dp,
-    toolbarFixedHeight : Dp = 30.dp,
     topAppbar : @Composable (height : Dp, offsetHeightPx : Int) -> Unit,
-    fixedContainer : @Composable ((height : Dp, offsetHeightPx : Int) -> Unit)? = null,
-    body : @Composable (topPadding : Dp) -> Unit
+    fixedContainer : @Composable() ((height : Dp, offsetHeightPx : Int) -> Unit)? = null,
+    toolbarFixedHeight : Dp = if (fixedContainer == null) 0.dp else 30.dp,
+    foldingAnimation : Boolean = false,
+    body : @Composable (topPadding : Dp, (Float) -> Unit) -> Unit
 ) {
     // here we use LazyColumn that has build-in nested scroll, but we want to act like a
 // parent for this LazyColumn and participate in its nested scroll.
@@ -191,6 +226,9 @@ fun NestedScrollCompose(
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
 // our offset to collapse toolbar
     val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
+    val setToolbarOffset : (Float) -> Unit = {
+        toolbarOffsetHeightPx.value = it
+    }
 // now, let's create connection to the nested scroll system and listen to the scroll
 // happening inside child LazyColumn
     val nestedScrollConnection = remember {
@@ -211,32 +249,80 @@ fun NestedScrollCompose(
         Modifier
             .fillMaxSize()
             // attach as a parent to the nested scroll system
-            .nestedScroll(nestedScrollConnection)
+            .nestedScroll(nestedScrollConnection),
     ) {
-        body(toolbarHeight + toolbarFixedHeight)
+        val animationHeight = when (foldingAnimation) {
+            true -> {
+                val changeValue = abs(toolbarOffsetHeightPx.value.roundToInt())
+                val delta = toolbarHeightPx / changeValue
+                toolbarFixedHeight / delta
+            }
+            else -> {
+                toolbarFixedHeight
+            }
+        }
+        body(toolbarHeight + animationHeight, setToolbarOffset)
+        fixedContainer?.invoke(animationHeight, toolbarHeightPx.toInt() + toolbarOffsetHeightPx.value.roundToInt())
         topAppbar(toolbarHeight, toolbarOffsetHeightPx.value.roundToInt())
-        fixedContainer?.invoke(toolbarFixedHeight, toolbarHeightPx.toInt() + toolbarOffsetHeightPx.value.roundToInt())
     }
 }
 
-// TODO Infinity List Compose 추가함.
+/**
+ * Scroll Top Button Compose
+ * @param setOffset NetstedScroll을 사용할경우 title toolbar scroll 설정을 위함.
+ * TODO: content의 LazyColumn의 아이팀이 하나일때만 가능하다 scroll의 offset전체를 알방법이 필요하다.
+ */
 @Composable
-fun LazyListState.OnEndItem(
-    threshold : Int = 0,
-    loadMore : () -> Unit
+fun ScrollTopButtonCompose(
+    scrollState : LazyListState,
+    setOffset : (Float) -> Unit,
+    content : @Composable () -> Unit
 ) {
-    val isEndItem = remember {
+    val density = LocalDensity.current
+    val screenHeightPx = with(density) {
+        LocalConfiguration.current.screenHeightDp.dp.roundToPx() * 0.8
+    }
+    val showButton by remember {
         derivedStateOf {
-            val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf true
-            lastVisibleItem.index >= layoutInfo.totalItemsCount - (threshold + 1)
+            val firstOffset = scrollState.firstVisibleItemScrollOffset
+            firstOffset > screenHeightPx
         }
     }
-    LaunchedEffect(key1 = isEndItem) {
-        snapshotFlow { isEndItem.value }
-            .collect {
-                // if should load more, then invoke loadMore
-                if (it) loadMore()
+
+    val coroutineScope = rememberCoroutineScope()
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        content()
+        AnimatedVisibility(visible = showButton,
+            enter = slideInVertically {
+                with(density) {
+                    40.dp.roundToPx()
+                }
+            },
+            exit = slideOutVertically {
+                with(density) {
+                    40.dp.roundToPx()
+                }
             }
+        ) {
+            IconButton(
+                modifier = Modifier
+                    .offset(y = (-10).dp)
+                    .border(1.dp, Color.Black, CircleShape)
+                    .size(30.dp),
+                onClick = {
+                    coroutineScope.launch {
+                        setOffset(0f)
+                        scrollState.animateScrollToItem(0)
+                    }
+                }
+            ) {
+                Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = null)
+            }
+        }
     }
 }
 
@@ -259,5 +345,32 @@ fun MeasureUnconstrainedViewWidth(
     }
 }
 
-
+/**
+ * refresh Swipe Compose
+ */
+@Composable
+fun SwipeRefreshCompose(
+    isRefresh : Boolean,
+    onRefresh : () -> Unit,
+    content : @Composable () -> Unit
+) {
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing = isRefresh),
+        onRefresh = onRefresh,
+        indicator = { state, trigger ->
+            SwipeRefreshIndicator(
+                // Pass the SwipeRefreshState + trigger through
+                state = state,
+                refreshTriggerDistance = trigger,
+                // Enable the scale animation
+                scale = true,
+                // Change the color and shape
+                backgroundColor = Color.White,
+                shape = CircleShape,
+            )
+        }
+    ) {
+        content()
+    }
+}
 

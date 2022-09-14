@@ -46,9 +46,6 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.CheckTaskActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
@@ -116,7 +113,7 @@ private fun TodoListHoisting() {
         allCheckState = nextState
     }
 
-    val onExpended: (TodoItem, Boolean) -> Unit = { item, isCheck ->
+    val onExpended : (TodoItem, Boolean) -> Unit = { item, isCheck ->
         todoListState.viewModel.setExpend(item, isCheck)
     }
 
@@ -157,7 +154,7 @@ private fun TodoListHoisting() {
         }
     ) {
         Box(modifier = Modifier.padding(it)) {
-            SwipeRefreshView(todoListState) {
+            SwipeRefreshViewHoisting(todoListState) {
                 TodoList(
                     todoListState,
                     onChecked = onCheck,
@@ -170,28 +167,16 @@ private fun TodoListHoisting() {
 }
 
 @Composable
-fun SwipeRefreshView(
+fun SwipeRefreshViewHoisting(
     todoListState : TodoListState,
     content : @Composable () -> Unit
 ) {
     val isRefresh by todoListState.viewModel.isRefreshing.collectAsState()
-    SwipeRefresh(
-        state = rememberSwipeRefreshState(isRefreshing = isRefresh),
+    SwipeRefreshCompose(
+        isRefresh = isRefresh,
         onRefresh = {
             todoListState.viewModel.onRefresh()
         },
-        indicator = { state, trigger ->
-            SwipeRefreshIndicator(
-                // Pass the SwipeRefreshState + trigger through
-                state = state,
-                refreshTriggerDistance = trigger,
-                // Enable the scale animation
-                scale = true,
-                // Change the color and shape
-                backgroundColor = Color.White,
-                shape = CircleShape,
-            )
-        }
     ) {
         content()
     }
@@ -572,21 +557,25 @@ fun TodoItemView(
 }
 
 @Composable
-fun RowSpacer(visible: Boolean) {
+fun RowSpacer(visible : Boolean) {
     AnimatedVisibility(visible = visible) {
-        Spacer(modifier = Modifier.height(8.dp).background(Color.Gray))
+        Spacer(modifier = Modifier
+            .height(8.dp)
+            .background(Color.Gray))
     }
 }
 
 @Composable
-fun DescriptionView(modifier : Modifier = Modifier, content:String) {
+fun DescriptionView(modifier : Modifier = Modifier, content : String) {
     Surface(
         modifier = modifier.padding(2.dp),
         shadowElevation = 3.dp
     ) {
         Text(
             text = content,
-            modifier = Modifier.fillMaxWidth().padding(2.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(2.dp)
         )
     }
 }
@@ -638,5 +627,5 @@ fun BottomProgressPreview() {
 @Preview(name = "TodoItemView")
 @Composable
 fun TodoItemViewPreview() {
-    TodoItemView(TodoItem(1, "xxxx","adfasdfasdfadsf"), {}, {}, {})
+    TodoItemView(TodoItem(1, "xxxx", "adfasdfasdfadsf"), {}, {}, {})
 }
