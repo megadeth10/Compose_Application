@@ -19,7 +19,8 @@ import com.my.composeapplication.base.data.CheckGroupState
  * Created by YourName on 2022/09/13.
  * Checkbox Group Compose
  */
-
+private val paddingSize = 5.dp
+private val checkboxSize = 30.dp
 @Composable
 fun CheckboxGroupWithAllHoisting(
     modifier : Modifier = Modifier,
@@ -158,13 +159,13 @@ private fun CheckBoxTextCompose(
             .clickable {
                 onClick.invoke(title)
             }
-            .padding(5.dp)
+            .padding(paddingSize)
             .fillMaxWidth()
     ) {
         val (checkbox, text) = createRefs()
         Checkbox(
             modifier = Modifier
-                .size(30.dp)
+                .size(checkboxSize)
                 .constrainAs(checkbox) {
                     var startLink = parent.start
                     var endLink = text.start
@@ -215,8 +216,8 @@ private fun CheckGroupTitle(
             .clickable {
                 onClick.invoke(!selected)
             }
-            .padding(5.dp)
-            .height(30.dp)
+            .padding(paddingSize)
+            .height(checkboxSize)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End
@@ -229,7 +230,7 @@ private fun CheckGroupTitle(
         }
         Checkbox(
             modifier = Modifier
-                .size(30.dp),
+                .size(checkboxSize),
             checked = selected,
             onCheckedChange = null,
         )

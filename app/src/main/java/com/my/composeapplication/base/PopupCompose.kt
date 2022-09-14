@@ -18,6 +18,8 @@ import com.my.composeapplication.base.data.PopupState
  * Popup 생성을 위한 CustomCompose
  */
 
+private val paddingSize = 5.dp
+
 /**
  * 중요 포인터 PopupView의 Anchor가 없는 이유는 Box로 감싸기만 하면 알아서 표시 된다.
  */
@@ -71,8 +73,8 @@ fun PopupContentView(content : String) {
     Text(
         text = content,
         modifier = Modifier
-            .background(Color.Gray, RoundedCornerShape(5.dp))
-            .border(1.dp, Color.Black, shape = RoundedCornerShape(5.dp))
-            .padding(5.dp),
+            .background(Color.Gray, RoundedCornerShape(paddingSize))
+            .border(1.dp, Color.Black, shape = RoundedCornerShape(paddingSize))
+            .padding(paddingSize),
     )
 }

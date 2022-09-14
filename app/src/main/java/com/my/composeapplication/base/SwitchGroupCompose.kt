@@ -19,7 +19,7 @@ import com.my.composeapplication.base.data.SwitchGroupState
  * Created by YourName on 2022/09/13.
  * Switch group compose
  */
-
+private val paddingSize = 5.dp
 @Composable
 fun SwitchGroupHoisting(
     modifier : Modifier = Modifier,
@@ -80,7 +80,7 @@ private fun SwitchTextCompose(
             .clickable {
                 onClick.invoke(title)
             }
-            .padding(5.dp)
+            .padding(paddingSize)
             .fillMaxWidth()
     ) {
         val (checkbox, text) = createRefs()
@@ -92,7 +92,7 @@ private fun SwitchTextCompose(
                     height = Dimension.wrapContent
                     var startLink = checkbox.end
                     var endLink = parent.end
-                    var startPadding = 5.dp
+                    var startPadding = paddingSize
                     if (reversLayout) {
                         startLink = parent.start
                         endLink = checkbox.start

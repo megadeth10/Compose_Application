@@ -15,6 +15,7 @@ import com.my.composeapplication.base.data.BaseGroupState
  * Created by YourName on 2022/09/13.
  * Group Item Compose
  */
+private val paddingSize = 5.dp
 
 @Composable
 fun GroupItemCompose(
@@ -40,7 +41,7 @@ fun GroupItemCompose(
         state.itemList.forEachIndexed { index, item ->
             childCompose(item, localOnClick)
             if (state.itemList.size > index + 1) {
-                Divider(modifier = modifier.padding(horizontal = 5.dp), color = Color.Black)
+                Divider(modifier = modifier.padding(horizontal = paddingSize), color = Color.Black)
             }
         }
     }

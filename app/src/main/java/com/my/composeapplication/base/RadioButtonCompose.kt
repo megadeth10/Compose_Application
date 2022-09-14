@@ -21,6 +21,8 @@ import com.my.composeapplication.base.data.RadioGroupState
  * Created by YourName on 2022/09/08.
  * RadioButton Custom Compose
  */
+private val paddingSize = 5.dp
+private val checkboxSize = 30.dp
 
 @Composable
 fun RadioGroupHoisting(
@@ -98,13 +100,13 @@ private fun RadioButtonTextView(
             .clickable {
                 onClick.invoke(title)
             }
-            .padding(5.dp)
+            .padding(paddingSize)
             .fillMaxWidth()
     ) {
         val (checkbox, text) = createRefs()
         RadioButton(
             modifier = Modifier
-                .size(30.dp)
+                .size(checkboxSize)
                 .constrainAs(checkbox) {
                     var startLink = parent.start
                     var endLink = text.start
