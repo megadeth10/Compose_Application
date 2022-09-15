@@ -155,12 +155,16 @@ private fun TodoListHoisting() {
     ) {
         Box(modifier = Modifier.padding(it)) {
             SwipeRefreshViewHoisting(todoListState) {
-                TodoList(
-                    todoListState,
-                    onChecked = onCheck,
-                    onClose = onRemove,
-                    onExpended = onExpended
-                )
+                ScrollTopButtonCompose(
+                    scrollState = todoListState.scrollState,
+                ) {
+                    TodoList(
+                        todoListState,
+                        onChecked = onCheck,
+                        onClose = onRemove,
+                        onExpended = onExpended
+                    )
+                }
             }
         }
     }

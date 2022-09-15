@@ -71,6 +71,8 @@ fun DetailScreen() {
                 ) {
                     item {
                         HeaderPagerView()
+                    }
+                    item {
                         DescriptionView()
                     }
                 }

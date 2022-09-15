@@ -40,7 +40,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.my.composeapplication.ui.theme.RED_POINT
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -187,7 +187,9 @@ fun highlightView(body : @Composable () -> Unit) : (Boolean) -> Unit {
     return setHighLight
 }
 
-// TODO Infinity List Compose 추가함.
+/**
+ *  Infinity List Compose 추가함.
+ */
 @Composable
 fun LazyListState.OnEndItem(
     threshold : Int = 0,
@@ -270,33 +272,63 @@ fun NestedScrollCompose(
 /**
  * Scroll Top Button Compose
  * @param setOffset NetstedScroll을 사용할경우 title toolbar scroll 설정을 위함.
- * TODO: content의 LazyColumn의 아이팀이 하나일때만 가능하다 scroll의 offset전체를 알방법이 필요하다.
+ * TODO: content의 LazyColumn의 아이템이 하나일때만 가능하다 scroll의 offset전체를 알방법이 필요하다.
  */
 @Composable
 fun ScrollTopButtonCompose(
     scrollState : LazyListState,
-    setOffset : (Float) -> Unit,
+    setOffset : ((Float) -> Unit)? = null,
     content : @Composable () -> Unit
 ) {
     val density = LocalDensity.current
     val screenHeightPx = with(density) {
-        LocalConfiguration.current.screenHeightDp.dp.roundToPx() * 0.8
+        LocalConfiguration.current.screenHeightDp.dp.roundToPx() * 0.3
     }
+    val scrollOffsetMap = remember {
+        mutableMapOf(Pair<Int, Int>(0, 0))
+    }
+    var buttonVisible by remember {
+        mutableStateOf(false)
+    }
+    var job : Job? by remember {
+        mutableStateOf(null)
+    }
+    val coroutineScope = rememberCoroutineScope()
     val showButton by remember {
         derivedStateOf {
             val firstOffset = scrollState.firstVisibleItemScrollOffset
-            firstOffset > screenHeightPx
+            val firstIndex = scrollState.firstVisibleItemIndex
+            scrollOffsetMap[firstIndex] = firstOffset
+            job?.cancel()
+            val currentVisible = buttonVisible
+            job = coroutineScope.launch(Dispatchers.Default) {
+                try {
+                    val newVisible = checkValue(
+                        firstIndex = firstIndex,
+                        targetOffset = screenHeightPx.toInt(),
+                        dataMap = scrollOffsetMap,
+                    )
+                    withContext(Dispatchers.Main) {
+                        if (currentVisible != newVisible) {
+                            Log.e("CustomCompose", "ScrollTopButtonCompose() newVisible:$newVisible")
+                            buttonVisible = newVisible
+                        }
+                    }
+                } catch (ex : CancellationException) {
+//                    Log.e("CustomCompose", "ScrollTopButtonCompose() cancel")
+                }
+            }
+            false
         }
     }
 
-    val coroutineScope = rememberCoroutineScope()
     Box(
         modifier = Modifier
             .fillMaxSize(),
         contentAlignment = Alignment.BottomCenter
     ) {
         content()
-        AnimatedVisibility(visible = showButton,
+        AnimatedVisibility(visible = showButton || buttonVisible,
             enter = slideInVertically {
                 with(density) {
                     40.dp.roundToPx()
@@ -315,8 +347,9 @@ fun ScrollTopButtonCompose(
                     .size(30.dp),
                 onClick = {
                     coroutineScope.launch {
-                        setOffset(0f)
-                        scrollState.animateScrollToItem(0)
+                        setOffset?.invoke(0f)
+//                        scrollState.animateScrollToItem(0)
+                        scrollState.scrollToItem(0)
                     }
                 }
             ) {
@@ -324,9 +357,34 @@ fun ScrollTopButtonCompose(
             }
         }
     }
+
+    DisposableEffect(key1 = true) {
+        onDispose {
+            job?.cancel()
+        }
+    }
 }
 
-// TODO viewToMeasure로 그려질 compose의 width를 계산
+/**
+ * Lazy List item을 이용한 전체 offset 계산
+ */
+private fun checkValue(
+    firstIndex : Int,
+    targetOffset : Int,
+    dataMap : MutableMap<Int, Int>
+) : Boolean {
+    var totalOffset = 0
+    for (i in 0..firstIndex) {
+        totalOffset += dataMap[i] ?: 0
+    }
+    val newVisible = totalOffset > targetOffset
+//    Log.e("CustomCompose", "checkValue() firstIndex: $firstIndex totalOffset: $totalOffset newVisible:$newVisible")
+    return newVisible
+}
+
+/**
+ * viewToMeasure로 그려질 compose의 width를 계산
+ */
 @Composable
 fun MeasureUnconstrainedViewWidth(
     viewToMeasure : @Composable () -> Unit,
