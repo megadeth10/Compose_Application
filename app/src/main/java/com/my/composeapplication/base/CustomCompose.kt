@@ -215,6 +215,7 @@ fun LazyListState.OnEndItem(
  */
 @Composable
 fun NestedScrollCompose(
+    initOffset: Float = 0f,
     toolbarHeight : Dp = 48.dp,
     topAppbar : @Composable (height : Dp, offsetHeightPx : Int) -> Unit,
     fixedContainer : @Composable() ((height : Dp, offsetHeightPx : Int) -> Unit)? = null,
@@ -227,7 +228,7 @@ fun NestedScrollCompose(
 // Let's make a collapsing toolbar for LazyColumn
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
 // our offset to collapse toolbar
-    val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
+    val toolbarOffsetHeightPx = remember { mutableStateOf(initOffset) }
     val setToolbarOffset : (Float) -> Unit = {
         toolbarOffsetHeightPx.value = it
     }
@@ -271,24 +272,25 @@ fun NestedScrollCompose(
 
 /**
  * Scroll Top Button Compose
- * @param setOffset NetstedScroll을 사용할경우 title toolbar scroll 설정을 위함.
+ * @param setToolbarOffset NetstedScroll을 사용할경우 title toolbar scroll 설정을 위함.
  * TODO: content의 LazyColumn의 아이템이 하나일때만 가능하다 scroll의 offset전체를 알방법이 필요하다.
  */
 @Composable
 fun ScrollTopButtonCompose(
     scrollState : LazyListState,
-    setOffset : ((Float) -> Unit)? = null,
+    setToolbarOffset : ((Float) -> Unit)? = null,
+    initVisible: Boolean = false,
     content : @Composable () -> Unit
 ) {
     val density = LocalDensity.current
     val screenHeightPx = with(density) {
         LocalConfiguration.current.screenHeightDp.dp.roundToPx() * 0.3
     }
-    val scrollOffsetMap = remember {
-        mutableMapOf(Pair<Int, Int>(0, 0))
+    val scrollOffsetMap = rememberSaveable {
+        mutableMapOf(Pair(0, 0))
     }
-    var buttonVisible by remember {
-        mutableStateOf(false)
+    var buttonVisible by rememberSaveable {
+        mutableStateOf(initVisible)
     }
     var job : Job? by remember {
         mutableStateOf(null)
@@ -299,6 +301,7 @@ fun ScrollTopButtonCompose(
             val firstOffset = scrollState.firstVisibleItemScrollOffset
             val firstIndex = scrollState.firstVisibleItemIndex
             scrollOffsetMap[firstIndex] = firstOffset
+//            Log.e("CustomCompose", "ScrollTopButtonCompose() firstIndex:$firstIndex")
             job?.cancel()
             val currentVisible = buttonVisible
             job = coroutineScope.launch(Dispatchers.Default) {
@@ -310,7 +313,7 @@ fun ScrollTopButtonCompose(
                     )
                     withContext(Dispatchers.Main) {
                         if (currentVisible != newVisible) {
-                            Log.e("CustomCompose", "ScrollTopButtonCompose() newVisible:$newVisible")
+//                            Log.e("CustomCompose", "ScrollTopButtonCompose() newVisible:$newVisible")
                             buttonVisible = newVisible
                         }
                     }
@@ -347,7 +350,7 @@ fun ScrollTopButtonCompose(
                     .size(30.dp),
                 onClick = {
                     coroutineScope.launch {
-                        setOffset?.invoke(0f)
+                        setToolbarOffset?.invoke(0f)
 //                        scrollState.animateScrollToItem(0)
                         scrollState.scrollToItem(0)
                     }
