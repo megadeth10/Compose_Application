@@ -17,6 +17,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -41,6 +42,8 @@ import kotlinx.coroutines.launch
 
 /**
  * Created by YourName on 2022/09/14.
+ * TODO
+ * 1. 메뉴를 pager 아래에서 나오는 Compose 만들어 보기
  */
 @AndroidEntryPoint
 class DetailActivity : BaseComponentActivity() {
@@ -58,6 +61,19 @@ sealed class DetailMenuEnum(val title : String, val index : Int) {
     object FirstContent : DetailMenuEnum("FirstContent", 2)
     object SecondContent : DetailMenuEnum("SecondContent", 3)
     object ThirdContent : DetailMenuEnum("ThirdContent", 4)
+    object EmptyContent : DetailMenuEnum("EmptyContent", 5)
+
+    companion object {
+        fun getMenuItem(index : Int) = when (index) {
+            Pager.index -> Pager
+            SecretMenu.index -> SecretMenu
+            FirstContent.index -> FirstContent
+            SecondContent.index -> SecondContent
+            ThirdContent.index -> ThirdContent
+            EmptyContent.index -> EmptyContent
+            else -> null
+        }
+    }
 }
 
 @Composable
@@ -75,7 +91,7 @@ fun DetailScreenHoisting() {
         toolbarOffset,
         storeOffset = {
             toolbarOffset = it
-        }
+        },
     )
 }
 
@@ -83,13 +99,21 @@ fun DetailScreenHoisting() {
 fun DetailScreen(
     lazyListState : LazyListState,
     itemPositionMap : MutableMap<Int, Int>,
-    initOffset: Int,
-    storeOffset: (Int) -> Unit
+    initOffset : Int,
+    storeOffset : (Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val toolbarHeightPx = LocalDensity.current.run {
         toolbarHeight.roundToPx()
     }
+    val menuHighlightItem = remember {
+        derivedStateOf {
+            val currentIndex = lazyListState.firstVisibleItemIndex
+            Log.e("LEE", "DetailScreen() currentIndex:$currentIndex")
+            DetailMenuEnum.getMenuItem(currentIndex)
+        }
+    }
+
     SwipeRefreshViewHoisting {
         NestedScrollCompose(
             initOffset = initOffset.toFloat(),
@@ -100,16 +124,21 @@ fun DetailScreen(
             toolbarHeight = toolbarHeight,
             toolbarFixedHeight = 40.dp,
             fixedContainer = { height, offsetHeightPx ->
-                HorizontalMenuComposeHoisting(height, offsetHeightPx) { index ->
-                    coroutineScope.launch {
-                        var offset = toolbarHeightPx
-                        for (i in 0 until index) {
-                            offset += itemPositionMap[i] ?: 0
+                HorizontalMenuComposeHoisting(
+                    height,
+                    offsetHeightPx,
+                    setScrollPosition = { index ->
+                        coroutineScope.launch {
+//                            var offset = toolbarHeightPx
+//                            for (i in 0 until index) {
+//                                offset += itemPositionMap[i] ?: 0
+//                            }
+//                        Log.e("LEE", "HealthPagerItem() index: $index map: ${itemPositionMap} offset: $offset")
+                            lazyListState.animateScrollToItem(index, toolbarHeightPx)
                         }
-//                        Log.e("LEE", "HealthPagerItem() name: ${itemPositionMap} offset: $offset")
-                        lazyListState.animateScrollToItem(DetailMenuEnum.Pager.index, offset)
-                    }
-                }
+                    },
+                    menuHighlight = menuHighlightItem.value,
+                )
             },
             foldingAnimation = true
         ) { paddingValue, setOffset ->
@@ -126,7 +155,19 @@ fun DetailScreen(
                         )
                     }
                     item {
-                        DescriptionView(itemPositionMap)
+//                        DescriptionView(itemPositionMap)
+                    }
+                    item {
+                        FirstMenu(itemPositionMap, DetailMenuEnum.FirstContent)
+                    }
+                    item {
+                        SecondMenu(itemPositionMap, DetailMenuEnum.SecondContent)
+                    }
+                    item {
+                        ThirdMenu(itemPositionMap, DetailMenuEnum.ThirdContent)
+                    }
+                    item {
+                        EmptyMenu(itemPositionMap, DetailMenuEnum.EmptyContent)
                     }
                 }
             }
@@ -169,7 +210,8 @@ fun DetailAppbar(height : Dp, offsetHeightPx : Int) {
 fun HorizontalMenuComposeHoisting(
     height : Dp,
     offsetHeightPx : Int = Int.MAX_VALUE,
-    setScrollPosition : (Int) -> Unit
+    setScrollPosition : (Int) -> Unit,
+    menuHighlight : DetailMenuEnum?,
 ) {
     val menuList = listOf(DetailMenuEnum.FirstContent, DetailMenuEnum.SecondContent, DetailMenuEnum.ThirdContent)
     val listState = rememberLazyListState()
@@ -178,7 +220,8 @@ fun HorizontalMenuComposeHoisting(
         offsetHeightPx,
         menuList,
         menuLazyListState = listState,
-        setScrollPosition = setScrollPosition
+        setScrollPosition = setScrollPosition,
+        menuHighlight = menuHighlight,
     )
 }
 
@@ -188,8 +231,10 @@ fun HorizontalMenuCompose(
     offsetHeightPx : Int = Int.MAX_VALUE,
     menuList : List<DetailMenuEnum>,
     menuLazyListState : LazyListState,
-    setScrollPosition : (Int) -> Unit
-) {
+    setScrollPosition : (Int) -> Unit,
+    menuHighlight : DetailMenuEnum?,
+
+    ) {
     LazyRow(
         state = menuLazyListState,
         modifier = Modifier
@@ -202,7 +247,10 @@ fun HorizontalMenuCompose(
         items(menuList) {
             Box(modifier = Modifier
                 .clickable {
-                    setScrollPosition(it.index)
+                    Log.e("LEE", "HorizontalMenuCompose() click index: ${it.index}")
+                    if (it.index != menuHighlight?.index) {
+                        setScrollPosition(it.index)
+                    }
                 }
                 .fillMaxHeight()
                 .border(1.dp, Color.Black, RectangleShape)
@@ -211,6 +259,7 @@ fun HorizontalMenuCompose(
                     text = it.title,
                     modifier = Modifier
                         .align(Alignment.Center),
+                    fontWeight = if (menuHighlight == it) FontWeight.Bold else FontWeight.Normal
                 )
             }
         }
@@ -286,15 +335,6 @@ fun HeaderPagerCompose(
 }
 
 @Composable
-fun DescriptionView(itemPositionMap : MutableMap<Int, Int>) {
-    Column {
-        FirstMenu(itemPositionMap, DetailMenuEnum.FirstContent)
-        SecondMenu(itemPositionMap, DetailMenuEnum.SecondContent)
-        ThirdMenu(itemPositionMap, DetailMenuEnum.ThirdContent)
-    }
-}
-
-@Composable
 fun FirstMenu(
     itemPositionMap : MutableMap<Int, Int>,
     menuItem : DetailMenuEnum,
@@ -351,6 +391,29 @@ fun ThirdMenu(
     )
 }
 
+/**
+ * 최 하단에 dummy를 추가하여 menu와 스크롤 위치를 어느정도 동기화 하기위한 눈속임의 용도
+ */
+@Composable
+fun EmptyMenu(
+    itemPositionMap : MutableMap<Int, Int>,
+    menuItem : DetailMenuEnum,
+) {
+    val height = LocalConfiguration.current.screenHeightDp.dp.times(0.3f)
+    Text(
+        text = menuItem.title,
+        modifier = Modifier
+            .onGloballyPositioned {
+                if (it.isAttached) {
+                    itemPositionMap[menuItem.index] = it.size.height
+                }
+            }
+            .fillMaxWidth()
+            .height(height)
+            .border(1.dp, Color.Black)
+    )
+}
+
 @Preview(name = "HorizontalMenu")
 @Composable
 fun HorizontalMenuPreview() {
@@ -358,7 +421,9 @@ fun HorizontalMenuPreview() {
         height = 70.dp,
         menuLazyListState = rememberLazyListState(),
         setScrollPosition = {},
-        menuList = listOf(DetailMenuEnum.FirstContent, DetailMenuEnum.SecondContent, DetailMenuEnum.ThirdContent)
+        menuList = listOf(DetailMenuEnum.FirstContent, DetailMenuEnum.SecondContent, DetailMenuEnum.ThirdContent),
+        menuHighlight = null,
+//        storeMenuHighlight = {}
     )
 }
 
