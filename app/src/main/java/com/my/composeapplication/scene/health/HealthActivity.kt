@@ -62,7 +62,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class HealthActivity : BaseComponentActivity() {
     private val viewModel by viewModels<HealthViewModel>()
-    override fun getContent() : @Composable () -> Unit = {
+    override fun getContent(): @Composable () -> Unit = {
         TodoListHoisting()
     }
 
@@ -73,20 +73,20 @@ class HealthActivity : BaseComponentActivity() {
 }
 
 class TodoListState(
-    val viewModel : HealthViewModel,
-    val allCheckState : MutableState<Boolean>,
-    val scrollState : LazyListState
+    val viewModel: HealthViewModel,
+    val allCheckState: MutableState<Boolean>,
+    val scrollState: LazyListState
 )
 
 @Composable
 fun rememberTodoListState(
-    viewModel : HealthViewModel = viewModel(
+    viewModel: HealthViewModel = viewModel(
         LocalContext.current as BaseComponentActivity
     ),
-    allCheckState : MutableState<Boolean> = rememberSaveable {
+    allCheckState: MutableState<Boolean> = rememberSaveable {
         mutableStateOf(false)
     },
-    scrollState : LazyListState = rememberLazyListState()
+    scrollState: LazyListState = rememberLazyListState()
 ) = remember(viewModel, allCheckState, scrollState) {
     TodoListState(
         viewModel = viewModel,
@@ -100,25 +100,25 @@ private fun TodoListHoisting() {
     val todoListState = rememberTodoListState()
     var allCheckState by todoListState.allCheckState
 
-    val onCheck : (TodoItem, Boolean) -> Unit = { item, isCheck ->
+    val onCheck: (TodoItem, Boolean) -> Unit = { item, isCheck ->
         todoListState.viewModel.setCheck(item, isCheck)
     }
-    val onRemove : (TodoItem) -> Unit = { item ->
+    val onRemove: (TodoItem) -> Unit = { item ->
         todoListState.viewModel.removeItem(item)
     }
 
-    val onCheckAll : () -> Unit = {
+    val onCheckAll: () -> Unit = {
         val nextState = !allCheckState
         todoListState.viewModel.allCheck(nextState)
         allCheckState = nextState
     }
 
-    val onExpended : (TodoItem, Boolean) -> Unit = { item, isCheck ->
+    val onExpended: (TodoItem, Boolean) -> Unit = { item, isCheck ->
         todoListState.viewModel.setExpend(item, isCheck)
     }
 
     val context = (LocalContext.current as BaseComponentActivity).baseContext
-    val goActivity : () -> Unit = {
+    val goActivity: () -> Unit = {
         context.startActivity(Intent(context, CheckTaskActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         })
@@ -172,8 +172,8 @@ private fun TodoListHoisting() {
 
 @Composable
 fun SwipeRefreshViewHoisting(
-    todoListState : TodoListState,
-    content : @Composable () -> Unit
+    todoListState: TodoListState,
+    content: @Composable () -> Unit
 ) {
     val isRefresh by todoListState.viewModel.isRefreshing.collectAsState()
     SwipeRefreshCompose(
@@ -187,7 +187,7 @@ fun SwipeRefreshViewHoisting(
 }
 
 @Composable
-fun HeaderPagerHoisting(todoListState : TodoListState, modifier : Modifier = Modifier) {
+fun HeaderPagerHoisting(todoListState: TodoListState, modifier: Modifier = Modifier) {
     val list = todoListState.viewModel.horizontalPagerItems
     HeaderPager(
         modifier = modifier,
@@ -198,8 +198,8 @@ fun HeaderPagerHoisting(todoListState : TodoListState, modifier : Modifier = Mod
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HeaderPager(
-    modifier : Modifier = Modifier,
-    list : List<PagerItem>
+    modifier: Modifier = Modifier,
+    list: List<PagerItem>
 ) {
     val initPage = 0
     val state = rememberInfinityPagerState(initPage)
@@ -223,10 +223,10 @@ fun HeaderPager(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun InfinityHorizontalPager(
-    modifier : Modifier = Modifier,
-    list : List<PagerItem>,
-    title : String,
-    pagerState : PagerState,
+    modifier: Modifier = Modifier,
+    list: List<PagerItem>,
+    title: String,
+    pagerState: PagerState,
 ) {
     val indicatorState by remember {
         derivedStateOf {
@@ -262,10 +262,10 @@ fun InfinityHorizontalPager(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SimpleHorizontalPager(
-    modifier : Modifier = Modifier,
-    list : List<PagerItem>,
-    title : String,
-    pagerState : PagerState,
+    modifier: Modifier = Modifier,
+    list: List<PagerItem>,
+    title: String,
+    pagerState: PagerState,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         HealthPager(
@@ -292,9 +292,9 @@ fun SimpleHorizontalPager(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HealthPager(
-    modifier : Modifier = Modifier,
-    list : List<PagerItem>,
-    pagerState : PagerState,
+    modifier: Modifier = Modifier,
+    list: List<PagerItem>,
+    pagerState: PagerState,
 ) {
     HorizontalPager(
         modifier = modifier,
@@ -312,8 +312,8 @@ fun HealthPager(
 
 @Composable
 fun HealthPagerItem(
-    modifier : Modifier = Modifier,
-    item : PagerItem,
+    modifier: Modifier = Modifier,
+    item: PagerItem,
 ) {
     val contentScale = if (
         LocalConfiguration.current.screenWidthDp / LocalConfiguration.current.screenHeightDp < 1.0f
@@ -333,7 +333,7 @@ fun HealthPagerItem(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun PagerIndicator(modifier : Modifier = Modifier, pagerState : PagerState) {
+fun PagerIndicator(modifier: Modifier = Modifier, pagerState: PagerState) {
     HorizontalPagerIndicator(
         pagerState = pagerState,
         modifier = modifier
@@ -346,7 +346,7 @@ fun PagerIndicator(modifier : Modifier = Modifier, pagerState : PagerState) {
 }
 
 @Composable
-fun PagerTitle(modifier : Modifier = Modifier, title : String) {
+fun PagerTitle(modifier: Modifier = Modifier, title: String) {
     Box(modifier = modifier) {
         MeasureUnconstrainedViewWidth(
             viewToMeasure = {
@@ -404,8 +404,8 @@ fun PagerTitle(modifier : Modifier = Modifier, title : String) {
 
 @Composable
 fun DisplayText(
-    title : String,
-    color : Color,
+    title: String,
+    color: Color,
 ) {
     DisplayText(
         modifier = Modifier
@@ -416,8 +416,8 @@ fun DisplayText(
 
 @Composable
 fun DisplayText(
-    modifier : Modifier = Modifier,
-    title : String,
+    modifier: Modifier = Modifier,
+    title: String,
 ) {
     Text(
         text = title,
@@ -429,11 +429,11 @@ fun DisplayText(
 
 @Composable
 fun TodoList(
-    todoListState : TodoListState,
-    onChecked : (item : TodoItem, state : Boolean) -> Unit,
-    onClose : (item : TodoItem) -> Unit,
-    onExpended : (item : TodoItem, state : Boolean) -> Unit,
-    modifier : Modifier = Modifier
+    todoListState: TodoListState,
+    onChecked: (item: TodoItem, state: Boolean) -> Unit,
+    onClose: (item: TodoItem) -> Unit,
+    onExpended: (item: TodoItem, state: Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val list = todoListState.viewModel.list
     LaunchedEffect(key1 = true) {
@@ -447,7 +447,24 @@ fun TodoList(
             HeaderPagerHoisting(todoListState)
         }
         if (list.isEmpty()) {
-            items(listOf(null, null, null, null, null, null, null, null, null, null, null, null, null, null)) { item ->
+            items(
+                listOf(
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                )
+            ) { item ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -463,16 +480,25 @@ fun TodoList(
             }
         } else {
             items(list) { item ->
-                TodoItemView(
-                    item = item,
-                    onChecked = { isChecked ->
-                        onChecked(item, isChecked)
-                    },
-                    onClose = onClose,
-                    onExpended = { isExpend ->
-                        onExpended(item, isExpend)
+                Column {
+                    TodoItemView(
+                        item = item,
+                        onChecked = { isChecked ->
+                            onChecked(item, isChecked)
+                        },
+                        onClose = onClose,
+                        onExpended = { isExpend ->
+                            onExpended(item, isExpend)
+                        }
+                    )
+                    if (list.last() != item) {
+                        Divider(
+                            startIndent = 5.dp,
+                            thickness = 1.dp,
+                            color = Color.Black
+                        )
                     }
-                )
+                }
             }
             if (list.isNotEmpty()) {
                 item {
@@ -489,7 +515,7 @@ fun TodoList(
 }
 
 @Composable
-fun BottomProgress(modifier : Modifier = Modifier) {
+fun BottomProgress(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -505,11 +531,11 @@ fun BottomProgress(modifier : Modifier = Modifier) {
 
 @Composable
 fun TodoItemView(
-    item : TodoItem,
-    onChecked : (state : Boolean) -> Unit,
-    onClose : (item : TodoItem) -> Unit,
-    onExpended : (state : Boolean) -> Unit,
-    modifier : Modifier = Modifier
+    item: TodoItem,
+    onChecked: (state: Boolean) -> Unit,
+    onClose: (item: TodoItem) -> Unit,
+    onExpended: (state: Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -517,7 +543,6 @@ fun TodoItemView(
             .clickable {
                 onExpended(!item.isExpend)
             }
-            .border(BorderStroke(1.dp, Color.Black))
             .padding(
                 horizontal = 10.dp, vertical = 5.dp
             )
@@ -561,16 +586,18 @@ fun TodoItemView(
 }
 
 @Composable
-fun RowSpacer(visible : Boolean) {
+fun RowSpacer(visible: Boolean) {
     AnimatedVisibility(visible = visible) {
-        Spacer(modifier = Modifier
-            .height(8.dp)
-            .background(Color.Gray))
+        Spacer(
+            modifier = Modifier
+                .height(8.dp)
+                .background(Color.Gray)
+        )
     }
 }
 
 @Composable
-fun DescriptionView(modifier : Modifier = Modifier, content : String) {
+fun DescriptionView(modifier: Modifier = Modifier, content: String) {
     Surface(
         modifier = modifier.padding(2.dp),
         shadowElevation = 3.dp
