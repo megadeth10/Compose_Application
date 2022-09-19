@@ -1,5 +1,6 @@
 package com.my.composeapplication.scene.seekbar
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Slider
@@ -17,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import kotlin.math.roundToInt
@@ -31,12 +34,16 @@ class SeekbarActivity : BaseComponentActivity() {
 }
 
 @Composable
-fun SliderComposeHoisting() {
+fun SliderComposeHoisting(
+    modifier: Modifier = Modifier,
+    initValue: Float = 0f
+) {
     var sliderPosition by remember {
-        mutableStateOf(0f)
+        mutableStateOf(initValue)
     }
 
     SliderValueCompose(
+        modifier = modifier,
         sliderPosition = sliderPosition,
         setSliderPosition = {
             sliderPosition = it
@@ -46,6 +53,7 @@ fun SliderComposeHoisting() {
 
 @Composable
 fun SliderValueCompose(
+    modifier: Modifier = Modifier,
     sliderPosition: Float,
     setSliderPosition: (Float) -> Unit,
     steps: Int = 10,
@@ -56,10 +64,11 @@ fun SliderValueCompose(
             text = sliderPosition.toString()
         )
         SliderCompose(
-            sliderPosition,
-            setSliderPosition,
-            steps,
-            padding
+            modifier = modifier,
+            sliderPosition = sliderPosition,
+            setSliderPosition = setSliderPosition,
+            steps = steps,
+            padding = padding
         )
     }
 }
@@ -67,22 +76,24 @@ fun SliderValueCompose(
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun SliderCompose(
+    modifier: Modifier = Modifier,
     sliderPosition: Float,
     setSliderPosition: (Float) -> Unit,
     steps: Int = 10,
     padding: Dp = 0.dp
 ) {
-    val widthDp = LocalConfiguration.current.screenWidthDp.dp.minus(padding * 2)
     val itemWidthDp = 20.dp
     val dividePoint = steps - 1
     val itemCount = steps + 1
-    val offsetDp = (widthDp.minus(itemWidthDp * (itemCount))).div(steps)
-
-    Box(
+    BoxWithConstraints(
+        modifier = modifier,
         contentAlignment = Alignment.BottomCenter,
     ) {
+        val widthDp = maxWidth.minus(padding * 2)
+        val offsetDp = (widthDp.minus(itemWidthDp * (itemCount))).div(steps)
+
         Slider(
-            modifier = Modifier.background(Color.Gray),
+            modifier = Modifier.background(Color.LightGray),
             value = sliderPosition,
             onValueChange = setSliderPosition,
             steps = dividePoint
@@ -94,26 +105,38 @@ fun SliderCompose(
             verticalAlignment = Alignment.Bottom
         ) {
             for (i in 0..itemCount) {
+                val contourValue = i / steps.toFloat()
+                val highLight = sliderPosition >= contourValue
                 Text(
                     text = i.toString(),
                     modifier = Modifier.width(itemWidthDp),
                     textAlign = TextAlign.Center,
-                    fontSize = TextUnit(10f, TextUnitType.Sp)
+                    fontSize = TextUnit(10f, TextUnitType.Sp),
+                    color = if (highLight) {
+                        Color.Black
+                    } else {
+                        Color.Gray
+                    },
                 )
-                Spacer(modifier = Modifier.width(offsetDp))
+                if (i != itemCount) {
+                    Spacer(modifier = Modifier.width(offsetDp))
+                }
             }
         }
     }
 }
 
 @Composable
-fun RangeSliderComposeHoisting() {
-    val initValue = 0f .. 1f
+fun RangeSliderComposeHoisting(
+    modifier: Modifier = Modifier,
+    initValue: ClosedFloatingPointRange<Float> = 0f..1f
+) {
     var sliderPosition by remember {
         mutableStateOf(initValue)
     }
 
     RangeValueCompose(
+        modifier = modifier,
         sliderPosition = sliderPosition,
         setSliderPosition = {
             sliderPosition = it
@@ -124,17 +147,19 @@ fun RangeSliderComposeHoisting() {
 
 @Composable
 fun RangeValueCompose(
+    modifier: Modifier = Modifier,
     sliderPosition: ClosedFloatingPointRange<Float>,
     setSliderPosition: (ClosedFloatingPointRange<Float>) -> Unit,
     steps: Int = 10,
     padding: Dp = 0.dp,
-    valueRange : ClosedFloatingPointRange<Float> = 0f .. 1f
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f
 ) {
     Column {
         Text(
             text = "${sliderPosition.start} ~ ${sliderPosition.endInclusive}"
         )
         RangeSliderCompose(
+            modifier = modifier,
             sliderPosition,
             setSliderPosition,
             steps,
@@ -146,23 +171,25 @@ fun RangeValueCompose(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalUnitApi::class)
 @Composable
 fun RangeSliderCompose(
+    modifier: Modifier = Modifier,
     sliderPosition: ClosedFloatingPointRange<Float>,
     setSliderPosition: (ClosedFloatingPointRange<Float>) -> Unit,
     steps: Int = 10,
     padding: Dp = 0.dp,
-    valueRange : ClosedFloatingPointRange<Float> = 0f .. 1f
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f
 ) {
-    val widthDp = LocalConfiguration.current.screenWidthDp.dp.minus(padding * 2)
     val itemWidthDp = 20.dp
     val dividePoint = steps - 1
     val itemCount = steps + 1
-    val offsetDp = (widthDp.minus(itemWidthDp * (itemCount))).div(steps)
 
-    Box(
+    BoxWithConstraints(
+        modifier = modifier.padding(padding),
         contentAlignment = Alignment.BottomCenter,
     ) {
+        val widthDp = maxWidth.minus(padding * 2)
+        val offsetDp = (widthDp.minus(itemWidthDp * (itemCount))).div(steps)
         RangeSlider(
-            modifier = Modifier.background(Color.Gray),
+            modifier = Modifier.background(Color.LightGray),
             value = sliderPosition,
             onValueChange = setSliderPosition,
             valueRange = valueRange,
@@ -175,13 +202,24 @@ fun RangeSliderCompose(
             verticalAlignment = Alignment.Bottom
         ) {
             for (i in 0..itemCount) {
+                val contourValue = i / steps.toFloat()
+                val startValue = sliderPosition.start <= contourValue
+                val endValue = sliderPosition.endInclusive >= contourValue
+                val highLight = startValue && endValue
                 Text(
                     text = i.toString(),
                     modifier = Modifier.width(itemWidthDp),
                     textAlign = TextAlign.Center,
-                    fontSize = TextUnit(10f, TextUnitType.Sp)
+                    fontSize = TextUnit(10f, TextUnitType.Sp),
+                    color = if (highLight) {
+                        Color.Black
+                    } else {
+                        Color.Gray
+                    }
                 )
-                Spacer(modifier = Modifier.width(offsetDp))
+                if (i != itemCount) {
+                    Spacer(modifier = Modifier.width(offsetDp))
+                }
             }
         }
     }
