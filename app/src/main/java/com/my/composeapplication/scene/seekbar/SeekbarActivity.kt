@@ -1,34 +1,30 @@
 package com.my.composeapplication.scene.seekbar
 
-import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Slider
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.RangeSlider
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.tooling.preview.Preview
-import com.my.composeapplication.base.BaseComponentActivity
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
-import kotlin.math.roundToInt
+import com.my.composeapplication.base.BaseComponentActivity
 
 class SeekbarActivity : BaseComponentActivity() {
     override fun getContent(): @Composable () -> Unit = {
         Column {
             SliderComposeHoisting()
             RangeSliderComposeHoisting()
+            TestShapeCompose()
         }
     }
 }
@@ -225,6 +221,38 @@ fun RangeSliderCompose(
     }
 }
 
+@Composable
+fun TestShapeCompose() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .border(
+                1.dp,
+                Color.Black
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column {
+            Surface(
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(30.dp),
+                shape = RoundedCornerShape(topStart = 24.dp),
+                elevation = 5.dp
+            ) {}
+            Spacer(Modifier.height(5.dp))
+            Surface(
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(30.dp),
+                shape = CutCornerShape(10.dp, 0.dp, 0.dp, 0.dp),
+                elevation = 5.dp
+            ) {}
+        }
+    }
+}
+
 @Preview(name = "SliderCompose")
 @Composable
 fun SliderComposePreview() {
@@ -235,4 +263,10 @@ fun SliderComposePreview() {
 @Composable
 fun RangeSliderComposePreview() {
     RangeSliderComposeHoisting()
+}
+
+@Preview(name = "ShapeTest")
+@Composable
+fun ShapeTestPreview() {
+    TestShapeCompose()
 }
