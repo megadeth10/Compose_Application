@@ -180,7 +180,9 @@ private fun CheckBoxTextCompose(
                     bottom.linkTo(parent.bottom)
                 },
             checked = selected.any { it == title },
-            onCheckedChange = null
+            onCheckedChange = {
+                onClick.invoke(title)
+            }
         )
         Text(
             text = title,
@@ -232,7 +234,9 @@ private fun CheckGroupTitle(
             modifier = Modifier
                 .size(checkboxSize),
             checked = selected,
-            onCheckedChange = null,
+            onCheckedChange = {
+                onClick.invoke(it)
+            },
         )
     }
 }

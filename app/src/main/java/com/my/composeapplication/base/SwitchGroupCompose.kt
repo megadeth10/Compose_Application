@@ -3,11 +3,13 @@ package com.my.composeapplication.base
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -20,12 +22,13 @@ import com.my.composeapplication.base.data.SwitchGroupState
  * Switch group compose
  */
 private val paddingSize = 5.dp
+
 @Composable
 fun SwitchGroupHoisting(
-    modifier : Modifier = Modifier,
-    switchGroupState : SwitchGroupState<String>,
-    onCheckChange : (List<String>) -> Unit = {},
-    reversLayout : Boolean = false
+    modifier: Modifier = Modifier,
+    switchGroupState: SwitchGroupState<String>,
+    onCheckChange: (List<String>) -> Unit = {},
+    reversLayout: Boolean = false
 ) {
     var switchState by remember {
         mutableStateOf(switchGroupState)
@@ -47,10 +50,10 @@ fun SwitchGroupHoisting(
 
 @Composable
 private fun SwitchGroupCompose(
-    modifier : Modifier = Modifier,
-    state : SwitchGroupState<String>,
-    onCheckChange : (List<String>) -> Unit = {},
-    reversLayout : Boolean = false
+    modifier: Modifier = Modifier,
+    state: SwitchGroupState<String>,
+    onCheckChange: (List<String>) -> Unit = {},
+    reversLayout: Boolean = false
 ) {
     GroupItemCompose(
         modifier = modifier,
@@ -69,11 +72,11 @@ private fun SwitchGroupCompose(
 
 @Composable
 private fun SwitchTextCompose(
-    modifier : Modifier = Modifier,
-    title : String,
-    onClick : (String) -> Unit,
-    checkedItem : List<String>,
-    reversLayout : Boolean = false
+    modifier: Modifier = Modifier,
+    title: String,
+    onClick: (String) -> Unit,
+    checkedItem: List<String>,
+    reversLayout: Boolean = false
 ) {
     ConstraintLayout(
         modifier = modifier
@@ -121,7 +124,15 @@ private fun SwitchTextCompose(
                     bottom.linkTo(parent.bottom)
                 },
             checked = checkedItem.any { it == title },
-            onCheckedChange = null,
+            onCheckedChange = {
+                onClick.invoke(title)
+            },
+            thumbContent = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = null
+                )
+            },
         )
     }
 }
