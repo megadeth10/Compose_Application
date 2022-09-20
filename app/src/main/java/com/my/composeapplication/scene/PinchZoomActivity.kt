@@ -9,15 +9,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.FocusRequester.Companion.createRefs
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -29,12 +25,9 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -47,16 +40,14 @@ import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.viewmodel.PinchZoomViewModel
 import com.skydoves.landscapist.glide.GlideImage
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.lang.Math.*
 import kotlin.math.roundToInt
 
 /**
  * Created by YourName on 2022/09/05.
  * ref: https://developer.android.com/reference/kotlin/androidx/compose/foundation/gestures/package-summary?authuser=19#(androidx.compose.ui.input.pointer.PointerInputScope).detectTransformGestures(kotlin.Boolean,kotlin.Function4)
+ * gesture를 이용한 이미지 Zoom 기능과 이미지 edge scroll animation 샘플
  */
 
 @AndroidEntryPoint
@@ -65,37 +56,15 @@ class PinchZoomActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = {
         PinchZoomScreen()
     }
-
-    override fun onDestroy() {
-        stopJob()
-        super.onDestroy()
-    }
-}
-
-private var resetTransformAnimationJob : Job? = null
-private var resetOffsetAnimationJob : Job? = null
-
-/**
- * Coroutine job 취소
- */
-private fun stopJob() {
-    resetOffsetAnimationJob?.cancel()
-    resetTransformAnimationJob?.cancel()
-    resetOffsetAnimationJob = null
-    resetTransformAnimationJob = null
 }
 
 @Composable
 fun PinchZoomScreen() {
-    CustomScaffold(
-        modifier = Modifier
-            .fillMaxSize(),
-        topAppbar = {
-            CustomTopAppBar(
-                title = "PinchZoom",
-            )
-        }
-    ) {
+    CustomScaffold(modifier = Modifier.fillMaxSize(), topAppbar = {
+        CustomTopAppBar(
+            title = "PinchZoom",
+        )
+    }) {
         PinchImageScreen(modifier = Modifier.padding(it))
     }
 }
@@ -111,8 +80,7 @@ fun TouchSlopScreen() {
     Box(
         Modifier
             .fillMaxSize()
-            .onSizeChanged { width = it.width.toFloat() }
-    ) {
+            .onSizeChanged { width = it.width.toFloat() }) {
         Box(
             Modifier
                 .offset { IntOffset(offsetX.value.roundToInt(), offsetY.value.roundToInt()) }
@@ -123,27 +91,23 @@ fun TouchSlopScreen() {
                     forEachGesture {
                         awaitPointerEventScope {
                             val down = awaitFirstDown()
-                            val change =
-                                awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
-                                    val originalX = offsetX.value
-                                    val newValue =
-                                        (originalX + over).coerceIn(0f, width - 50.dp.toPx())
-                                    change.consume()
-                                    offsetX.value = newValue
-                                }
+                            val change = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
+                                val originalX = offsetX.value
+                                val newValue = (originalX + over).coerceIn(0f, width - 50.dp.toPx())
+                                change.consume()
+                                offsetX.value = newValue
+                            }
                             if (change != null) {
                                 horizontalDrag(change.id) {
                                     val originalX = offsetX.value
-                                    val newValue = (originalX + it.positionChange().x)
-                                        .coerceIn(0f, width - 50.dp.toPx())
+                                    val newValue = (originalX + it.positionChange().x).coerceIn(0f, width - 50.dp.toPx())
                                     it.consume()
                                     offsetX.value = newValue
                                 }
                             }
                         }
                     }
-                }
-        )
+                })
     }
 }
 
@@ -157,18 +121,15 @@ fun ScrollableScreen() {
     Box(
         Modifier
             .size(150.dp)
-            .scrollable(
-                orientation = Orientation.Vertical,
+            .scrollable(orientation = Orientation.Vertical,
                 // state for Scrollable, describes how consume scroll amount
                 state = rememberScrollableState { delta ->
                     // use the scroll data and indicate how much this element consumed.
                     // unconsumed deltas will be propagated to nested scrollables (if present)
                     offset.value = offset.value + delta // update the state
                     delta // indicate that we consumed all the pixels available
-                }
-            )
-            .background(Color.LightGray),
-        contentAlignment = Alignment.Center
+                })
+            .background(Color.LightGray), contentAlignment = Alignment.Center
     ) {
         // Modifier.scrollable is not opinionated about its children's layouts. It will however
         // promote nested scrolling capabilities if those children also use the modifier.
@@ -198,32 +159,24 @@ fun DoubleTapScreen() {
             rotation += rotationChange
             offset += offsetChange
         }
-        Box(
-            Modifier
-                // apply pan offset state as a layout transformation before other modifiers
-                .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
-                // add transformable to listen to multitouch transformation events after offset
-                .transformable(state = state)
-                // optional for example: add double click to zoom
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onDoubleTap = {
-                            coroutineScope.launch { state.animateZoomBy(4f) }
-                        }
-                    )
-                }
-                .fillMaxSize()
-                .border(1.dp, Color.Green),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(Modifier
+            // apply pan offset state as a layout transformation before other modifiers
+            .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
+            // add transformable to listen to multitouch transformation events after offset
+            .transformable(state = state)
+            // optional for example: add double click to zoom
+            .pointerInput(Unit) {
+                detectTapGestures(onDoubleTap = {
+                    coroutineScope.launch { state.animateZoomBy(4f) }
+                })
+            }
+            .fillMaxSize()
+            .border(1.dp, Color.Green), contentAlignment = Alignment.Center) {
             Text(
-                "\uD83C\uDF55",
-                fontSize = 32.sp,
+                "\uD83C\uDF55", fontSize = 32.sp,
                 // apply other transformations like rotation and zoom on the pizza slice emoji
                 modifier = Modifier.graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
-                    rotationZ = rotation
+                    scaleX = scale, scaleY = scale, rotationZ = rotation
                 )
             )
         }
@@ -233,6 +186,7 @@ fun DoubleTapScreen() {
 
 @Composable
 fun PinchImageScreen(modifier : Modifier = Modifier) {
+    val maxZoom = 10f
     val viewModel = viewModel<PinchZoomViewModel>(LocalContext.current as BaseComponentActivity)
     var offset by remember { mutableStateOf(viewModel.offset) }
     var zoom by remember { mutableStateOf(viewModel.zoom) }
@@ -243,6 +197,16 @@ fun PinchImageScreen(modifier : Modifier = Modifier) {
         zoom = zoomChange
         angle = rotationChange
         offset = offsetChange
+    }
+    var resetTransformAnimationJob : Job? by remember {
+        mutableStateOf(null)
+    }
+    var resetOffsetAnimationJob : Job? by remember {
+        mutableStateOf(null)
+    }
+
+    var gestureTransformJob : Job? by remember {
+        mutableStateOf(null)
     }
 
     BoxWithConstraints(
@@ -266,23 +230,33 @@ fun PinchImageScreen(modifier : Modifier = Modifier) {
             modifier = Modifier
                 .transformable(state)
                 .pointerInput(Unit) {
-                    detectTransformGestures(
-                        onGesture = { centroid, pan, gestureZoom, gestureRotate ->
-                            val oldScale = zoom
-                            val newScale = zoom * gestureZoom
-                            // For natural zooming and rotating, the centroid of the gesture should
-                            // be the fixed point where zooming and rotating occurs.
-                            // We compute where the centroid was (in the pre-transformed coordinate
-                            // space), and then compute where it will be after this delta.
-                            // We then compute what the new offset should be to keep the centroid
-                            // visually stationary for rotating and zooming, and also apply the pan.
-                            val localOffset = (offset + centroid / oldScale).rotateBy(gestureRotate) -
-                                    (centroid / newScale + pan / oldScale)
-                            zoom = newScale
-                            offset = localOffset
-                            angle += gestureRotate
+                    detectTransformGestures(onGesture = { centroid, pan, gestureZoom, gestureRotate ->
+                        gestureTransformJob?.cancel()
+                        gestureTransformJob = coroutineScope.launch(Dispatchers.Default) {
+                            try {
+                                newTransFormation(
+                                    maxZoom = maxZoom,
+                                    centroid = centroid,
+                                    pan = pan,
+                                    gestureZoom = gestureZoom,
+                                    gestureRotate = gestureRotate,
+                                    zoom = zoom,
+                                    setZoom = {
+                                        zoom = it
+                                    },
+                                    offset = offset,
+                                    setOffset = {
+                                        offset = it
+                                    },
+                                    angle = angle,
+                                    setAngle = {
+                                        angle = it
+                                    })
+                            } catch (ex : CancellationException) {
+                                Log.e("PinchZoomActivity", "PinchImageScreen() cancel")
+                            }
                         }
-                    )
+                    })
                 }
                 .pointerInput(Unit) {
                     detectTapGestures(onDoubleTap = {
@@ -293,21 +267,13 @@ fun PinchImageScreen(modifier : Modifier = Modifier) {
                             val y = screenSize.height / targetScale
                             val offsetRect = Rect(0f, 0f, x, y)
                             resetTransform(
-                                scope = coroutineScope,
-                                state = state,
-                                zoom = targetScale,
-                                offset = Offset(
-                                    x = offsetRect.center.x,
-                                    y = offsetRect.center.y
-                                ),
-                                useDelay = false
+                                scope = coroutineScope, state = state, zoom = targetScale, offset = Offset(
+                                    x = offsetRect.center.x, y = offsetRect.center.y
+                                ), useDelay = false
                             )
                         } else {
                             resetTransform(
-                                scope = coroutineScope,
-                                state = state,
-                                zoom = 1.0f,
-                                useDelay = false
+                                scope = coroutineScope, state = state, zoom = 1.0f, useDelay = false
                             )
                         }
                     })
@@ -363,20 +329,57 @@ fun PinchImageScreen(modifier : Modifier = Modifier) {
                 override fun onLoadFailed(e : GlideException?, model : Any?, target : Target<Drawable>?, isFirstResource : Boolean) : Boolean {
                     return true
                 }
-
             }
         )
     }
 
     DisposableEffect(key1 = Unit) {
         onDispose {
-            stopJob()
+            resetTransformAnimationJob?.cancel()
+            resetTransformAnimationJob = null
+            resetOffsetAnimationJob?.cancel()
+            resetOffsetAnimationJob = null
+            gestureTransformJob?.cancel()
+            gestureTransformJob = null
             viewModel.storeValue(
                 angle = angle,
                 offset = offset,
                 zoom = zoom
             )
         }
+    }
+}
+
+suspend fun newTransFormation(
+    maxZoom : Float = 10f,
+    centroid : Offset,
+    pan : Offset,
+    gestureZoom : Float,
+    gestureRotate : Float,
+    zoom : Float,
+    setZoom : (Float) -> Unit,
+    offset : Offset,
+    setOffset : (Offset) -> Unit,
+    angle : Float,
+    setAngle : (Float) -> Unit,
+) {
+    val oldScale = zoom
+    val newScale = zoom * gestureZoom
+    if (newScale > maxZoom) {
+        throw CancellationException("maxZoomLevel")
+    }
+    Log.e("LEE", "newScale: $newScale")
+    // For natural zooming and rotating, the centroid of the gesture should
+    // be the fixed point where zooming and rotating occurs.
+    // We compute where the centroid was (in the pre-transformed coordinate
+    // space), and then compute where it will be after this delta.
+    // We then compute what the new offset should be to keep the centroid
+    // visually stationary for rotating and zooming, and also apply the pan.
+    val localOffset = (offset + centroid / oldScale).rotateBy(gestureRotate) - (centroid / newScale + pan / oldScale)
+    withContext(Dispatchers.Main) {
+        setZoom(newScale)
+        setOffset(localOffset)
+        setAngle(angle + gestureRotate)
     }
 }
 
