@@ -2,7 +2,10 @@ package com.my.composeapplication.scene.detail
 
 import android.util.Log
 import androidx.activity.viewModels
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.Text
@@ -24,14 +27,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.my.composeapplication.R
-import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.base.NestedScrollCompose
-import com.my.composeapplication.base.ScrollTopButtonCompose
-import com.my.composeapplication.base.SwipeRefreshCompose
+import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.PagerIndicator
 import com.my.composeapplication.scene.health.data.PagerItem
@@ -286,7 +285,8 @@ fun HeaderPagerComposeHoisting(
         state,
         contentScale,
         itemPositionMap,
-        itemIndex = DetailMenuEnum.Pager.index
+        itemIndex = DetailMenuEnum.Pager.index,
+        autoScroll = true
     )
 }
 
@@ -297,9 +297,10 @@ fun HeaderPagerCompose(
     state : PagerState,
     contentScale : ContentScale,
     itemPositionMap : MutableMap<Int, Int>,
-    itemIndex : Int = 0
+    itemIndex : Int = 0,
+    autoScroll : Boolean = false,
 ) {
-    Box(
+    HorizontalPagerCompose(
         modifier = Modifier
             .onGloballyPositioned {
                 if (it.isAttached) {
@@ -307,30 +308,28 @@ fun HeaderPagerCompose(
                 }
             }
             .fillMaxWidth()
-            .height(190.dp)
-    ) {
-        HorizontalPager(
-            modifier = Modifier.fillMaxSize(),
-            count = list.size,
-            state = state,
-        ) { page ->
-            val item = list[page]
-            GlideImage(
-                imageModel = item.imageUrl,
-                modifier = Modifier.clickable {
-                    Log.e("LEE", "HealthPagerItem() name: ${item.title}")
-                },
-                contentScale = contentScale,
-                previewPlaceholder = R.drawable.ic_launcher_foreground
-            )
-        }
-        if (list.isNotEmpty()) {
+            .height(190.dp),
+        listSize = list.size,
+        pagerState = state,
+        autoScroll = autoScroll,
+        indicatorContent = {
             PagerIndicator(
                 modifier = Modifier
                     .align(Alignment.BottomCenter),
                 pagerState = state
             )
         }
+    ) { interactionSource, pageIndex ->
+        val item = list[pageIndex]
+        GlideImage(
+            imageModel = item.imageUrl,
+            modifier = Modifier
+                .clickable(interactionSource = interactionSource, indication = null) {
+                    Log.e("LEE", "HealthPagerItem() name: ${item.title}")
+                },
+            contentScale = contentScale,
+            previewPlaceholder = R.drawable.ic_launcher_foreground
+        )
     }
 }
 
