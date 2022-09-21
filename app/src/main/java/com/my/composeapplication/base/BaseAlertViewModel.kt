@@ -36,7 +36,9 @@ abstract class BaseAlertViewModel : ViewModel() {
     /**
      * Popup State
      */
+    @Deprecated(message = "PopUpView의 anchor 설정이 되지 않고 anchor할 Compose를 wrapping 하는 형태로 하기 때문에 공통부로 사용이 필요없을것 같다.")
     private val _popState : MutableState<PopupState> = mutableStateOf(PopupState())
+    @Deprecated(message = "PopUpView의 anchor 설정이 되지 않고 anchor할 Compose를 wrapping 하는 형태로 하기 때문에 공통부로 사용이 필요없을것 같다.")
     val popState : State<PopupState> get() = this._popState
 
     /**
@@ -47,6 +49,7 @@ abstract class BaseAlertViewModel : ViewModel() {
     /**
      * popupShow
      */
+    @Deprecated(message = "PopUpView의 anchor 설정이 되지 않고 anchor할 Compose를 wrapping 하는 형태로 하기 때문에 공통부로 사용이 필요없을것 같다.")
     fun showPopup(popupState : PopupState) {
         this._popState.value = popupState
     }
@@ -54,6 +57,7 @@ abstract class BaseAlertViewModel : ViewModel() {
     /**
      * popupClose
      */
+    @Deprecated(message = "PopUpView의 anchor 설정이 되지 않고 anchor할 Compose를 wrapping 하는 형태로 하기 때문에 공통부로 사용이 필요없을것 같다.")
     fun dismissPopup() {
         this._popState.value = PopupState(isShow = false)
     }
@@ -64,7 +68,7 @@ abstract class BaseAlertViewModel : ViewModel() {
     fun setInputMode(mode:Int) {
         isAdjustInputMode = mode == WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
     }
-    fun getInputMode() = this.isAdjustInputMode
+    fun isAdjustInputMode() = this.isAdjustInputMode
 
     /**
      * Dialog 닫기
@@ -91,7 +95,7 @@ abstract class BaseAlertViewModel : ViewModel() {
     }
 
     /**
-     * Snackbar 출력
+     * Snackbar 출력 wrapping function
      */
     fun showSnackbar(
         message : String,

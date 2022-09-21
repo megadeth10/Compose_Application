@@ -34,6 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Created by YourName on 2022/08/26.
+ * Dialog, Snackbar, PopupView, DropDown Menu 샘플 코드
  */
 @AndroidEntryPoint
 class DialogActivity : BaseComponentActivity() {
@@ -56,9 +57,9 @@ fun DialogMainScreen() {
     val viewModel = viewModel<DialogViewModel>()
     val closeText = stringResource(id = R.string.close)
     val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
-            .verticalScroll(scrollState)
             .fillMaxSize()
     ) {
         CustomTopAppBar(title = "DialogActivity")
@@ -66,9 +67,13 @@ fun DialogMainScreen() {
             snackbarHostState = viewModel.snackbarState.value,
             onDismiss = viewModel::dismissSnackbar,
             modifier = Modifier.fillMaxSize(),
-            isShowTop = !viewModel.getInputMode()
+            isAdjustResizeMode = viewModel.isAdjustInputMode()
         ) {
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+            ) {
                 DropDownMenuButton()
                 Button(
                     onClick = {
@@ -196,7 +201,7 @@ fun DropDownMenuButton() {
                     onClick.invoke(null)
                 }
                 .padding(3.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = CenterVertically
         ) {
             Text(
                 modifier = Modifier.weight(1f),

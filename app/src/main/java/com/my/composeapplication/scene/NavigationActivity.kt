@@ -1,5 +1,7 @@
 package com.my.composeapplication.scene
 
+import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -7,51 +9,59 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.CustomScaffold
-import com.my.composeapplication.base.showSnackbar
+import com.my.composeapplication.base.DefaultSnackbar
+import com.my.composeapplication.viewmodel.NavigationViewModel
 
 /**
  * Created by YourName on 2022/08/16.
+ * Compose의 Navigater 샘플 코드
  */
-private var snackbarHostState : MutableState<SnackbarHostState>? = null
-
 class NavigationActivity : BaseComponentActivity() {
+    private val viewModel : NavigationViewModel by viewModels()
+    override fun onCreate(savedInstanceState : Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.setInputMode(window.attributes.softInputMode)
+    }
+
     override fun getContent() : @Composable () -> Unit = {
         NavScreen()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        snackbarHostState = null
-    }
 }
 
 @Composable
-fun NavScreen() {
+fun NavScreen(
+    viewModel : NavigationViewModel = viewModel(LocalContext.current as BaseComponentActivity)
+) {
     val navController = rememberNavController()
-    snackbarHostState = remember {
-        mutableStateOf(SnackbarHostState())
-    }
-    CustomScaffold(
-        snackbarHostState = snackbarHostState!!
-    ) {
-        NavHost(navController = navController, startDestination = "first") {
-            composable("first") {
-                FirstScreen(navController)
-            }
-            composable("second") {
-                SecondScreen(navController)
-            }
-            composable("third/{value}") { backStackEntry ->
-                ThirdScreen(navController, backStackEntry.arguments?.getString("value") ?: "")
+
+    CustomScaffold {
+        DefaultSnackbar(
+            modifier = Modifier.fillMaxSize(),
+            snackbarHostState = viewModel.snackbarState.value,
+            isAdjustResizeMode = viewModel.isAdjustInputMode()
+        ) {
+            NavHost(navController = navController, startDestination = "first") {
+                composable("first") {
+                    FirstScreen(navController)
+                }
+                composable("second") {
+                    SecondScreen(navController)
+                }
+                composable("third/{value}") { backStackEntry ->
+                    ThirdScreen(navController, backStackEntry.arguments?.getString("value") ?: "")
+                }
             }
         }
     }
@@ -59,7 +69,10 @@ fun NavScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun FirstScreen(navController : NavHostController) {
+fun FirstScreen(
+    navController : NavHostController,
+    viewModel : NavigationViewModel = viewModel(LocalContext.current as BaseComponentActivity)
+) {
     val (text, setText) = rememberSaveable {
         mutableStateOf("")
     }
@@ -86,8 +99,7 @@ fun FirstScreen(navController : NavHostController) {
                 } else {
                     keyboardController?.hide()
                     focusManager.clearFocus()
-                    showSnackbar(
-                        snackbarHostState = snackbarHostState?.value,
+                    viewModel.showSnackbar(
                         message = "입력이 필요합니다.",
                         actionLabel = "닫기"
                     )

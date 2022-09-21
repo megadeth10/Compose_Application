@@ -1,14 +1,17 @@
 package com.my.composeapplication.base
 
+import android.view.ViewTreeObserver
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,15 +23,22 @@ import kotlinx.coroutines.launch
  * Snack Composable
  * 문제점
  * 1. adjustResize가 아닐때, 키보드 노출에 의한 표시 정렬 위치를 해결해야함.
+ *  = BaseAlertViewModel의 setInputModel + 키보드 State 값을 설정해 주어서 해결함.
+ *  TODO
+ *  1. 함수명 변경해야함.
+ *  2. Landcape 이고 TopAppBar + Keyboard Show 일때 상단이 짤림
  */
 @Composable
 fun DefaultSnackbar(
     snackbarHostState : SnackbarHostState,
     modifier : Modifier = Modifier,
-    isShowTop : Boolean = false,
+    isAdjustResizeMode : Boolean = false,
     onDismiss : () -> Unit = { },
     content : @Composable () -> Unit,
 ) {
+    var showKeyboard by remember {
+        mutableStateOf(false)
+    }
     Box(modifier = modifier) {
         content()
         SnackbarHost(
@@ -62,7 +72,7 @@ fun DefaultSnackbar(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(
-                    if (isShowTop) {
+                    if (!isAdjustResizeMode && showKeyboard) {
                         Alignment.TopCenter
                     } else {
                         Alignment.BottomCenter
@@ -71,8 +81,22 @@ fun DefaultSnackbar(
         )
     }
 
-    DisposableEffect(key1 = snackbarHostState) {
+//    DisposableEffect(key1 = snackbarHostState) {
+//        onDispose {
+//            onDismiss()
+//        }
+//    }
+
+    val view = LocalView.current
+    DisposableEffect(key1 = snackbarHostState, key2 = view) {
+        val listener = ViewTreeObserver.OnGlobalLayoutListener {
+            val isKeyboardOpen = ViewCompat.getRootWindowInsets(view)
+                ?.isVisible(WindowInsetsCompat.Type.ime()) ?: true
+            showKeyboard = isKeyboardOpen
+        }
+        view.viewTreeObserver.addOnGlobalLayoutListener(listener)
         onDispose {
+            view.viewTreeObserver.removeOnGlobalLayoutListener(listener)
             onDismiss()
         }
     }
