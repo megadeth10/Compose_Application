@@ -21,6 +21,7 @@ import com.my.composeapplication.data.SampleData
 
 /**
  * Created by YourName on 2022/07/01.
+ * Modifier 테스트용 별 의미 없는 코드임
  */
 class ModifierActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = { ModifierContent() }

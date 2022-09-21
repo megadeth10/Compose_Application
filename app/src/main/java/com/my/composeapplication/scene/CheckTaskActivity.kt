@@ -11,10 +11,11 @@ import androidx.compose.ui.platform.LocalContext
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.CustomScaffold
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
-import com.my.composeapplication.scene.health.HealthActivity
+import com.my.composeapplication.scene.health.InfinityListActivity
 
 /**
  * Created by YourName on 2022/08/26.
+ * Activity 실행 테스트 용
  */
 class CheckTaskActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = {
@@ -31,7 +32,7 @@ class CheckTaskActivity : BaseComponentActivity() {
 fun MainScreen() {
     val context = (LocalContext.current as BaseComponentActivity).baseContext
     val goActivity : () -> Unit = {
-        context.startActivity(Intent(context, HealthActivity::class.java).apply {
+        context.startActivity(Intent(context, InfinityListActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
         })
     }

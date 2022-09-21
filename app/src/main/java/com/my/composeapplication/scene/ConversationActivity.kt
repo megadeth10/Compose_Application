@@ -43,6 +43,7 @@ import com.my.composeapplication.ui.theme.Red
 
 /**
  * Created by YourName on 2022/06/29.
+ * google Compose 따라하기 교육용 코드
  */
 class ConversationActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = {

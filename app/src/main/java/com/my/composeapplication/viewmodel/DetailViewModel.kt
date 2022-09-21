@@ -1,7 +1,6 @@
 package com.my.composeapplication.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.viewModelScope
 import com.my.composeapplication.base.BaseAlertViewModel
 import com.my.composeapplication.scene.health.data.PagerItem
@@ -36,7 +35,7 @@ class DetailViewModel @Inject constructor(): BaseAlertViewModel() {
                 this@DetailViewModel._isRefreshing.emit(newState)
             }
         }
-        Log.e(HealthViewModel::class.java.simpleName, "onRefresh() value: ${this.isRefreshing.value}")
+        Log.e(InfinityListViewModel::class.java.simpleName, "onRefresh() value: ${this.isRefreshing.value}")
     }
 
     fun onRefresh() {

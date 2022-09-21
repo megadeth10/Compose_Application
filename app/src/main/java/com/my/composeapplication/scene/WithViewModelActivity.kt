@@ -1,7 +1,6 @@
 package com.my.composeapplication.scene
 
 import android.util.Log
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +8,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,6 +23,7 @@ import androidx.compose.runtime.livedata.observeAsState
 
 /**
  * Created by YourName on 2022/08/16.
+ * ViewModel 샘플 코드
  */
 class WithViewModelActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = {
@@ -40,7 +39,7 @@ fun FirstScreen() {
     val text2 by rememberSaveable {
         mutableStateOf("hello")
     }
-    val viewModel = viewModel<WithViewMode>()
+    val viewModel = viewModel<WithViewModel>()
     val liveData = viewModel.liveData.observeAsState("")
     Surface {
         Column(
@@ -56,7 +55,7 @@ fun FirstScreen() {
     }
 }
 
-class WithViewMode: ViewModel() {
+class WithViewModel: ViewModel() {
     private var _liveData: MutableLiveData<String> = MutableLiveData("")
     val liveData: LiveData<String>  get() = _liveData
     fun setLiveData(newState: String) {

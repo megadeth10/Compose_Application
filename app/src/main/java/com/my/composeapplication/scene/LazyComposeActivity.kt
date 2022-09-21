@@ -13,6 +13,7 @@ import com.my.composeapplication.data.SampleData
 
 /**
  * Created by YourName on 2022/07/04.
+ * LazyVerticalGrid 테스트용 별 의미 없는 코드임
  */
 class LazyComposeActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = {

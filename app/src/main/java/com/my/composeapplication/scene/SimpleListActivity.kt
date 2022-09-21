@@ -36,6 +36,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Created by YourName on 2022/06/30.
+ * List의 scrollState를 이용한 버튼 노출 및 스크롤 이동 샘픔
  */
 class SimpleListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState : Bundle?) {

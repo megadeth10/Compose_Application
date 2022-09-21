@@ -48,6 +48,7 @@ import kotlin.math.roundToInt
  * Created by YourName on 2022/09/05.
  * ref: https://developer.android.com/reference/kotlin/androidx/compose/foundation/gestures/package-summary?authuser=19#(androidx.compose.ui.input.pointer.PointerInputScope).detectTransformGestures(kotlin.Boolean,kotlin.Function4)
  * gesture를 이용한 이미지 Zoom 기능과 이미지 edge scroll animation 샘플
+ * TODO 확대시에 화면 떨림을 어떻게 해결해야 하나
  */
 
 @AndroidEntryPoint

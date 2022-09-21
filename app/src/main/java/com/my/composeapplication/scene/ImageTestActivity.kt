@@ -37,6 +37,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Created by YourName on 2022/08/31.
+ * App 외부에서 사진 이미지 또는 파일 가져오는 샘플
  */
 
 @AndroidEntryPoint
@@ -230,6 +231,7 @@ private fun checkTopBottom(value1 : Int, value2 : Int) : Pair<Int, Int> {
     return Pair(topValue, bottomValue)
 }
 
+// width 기준 height scale value 계산
 private fun scaleHeightCalculate(view : Size, image : Size) : Float {
     val pairWidth = checkTopBottom(view.width, image.width)
     var pairHeight = checkTopBottom(view.height, image.height)

@@ -22,6 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Created by YourName on 2022/09/08.
+ * Radio, Check, Switch로 Group Compose 셈플
  */
 @AndroidEntryPoint
 class GroupButtonActivity : BaseComponentActivity() {

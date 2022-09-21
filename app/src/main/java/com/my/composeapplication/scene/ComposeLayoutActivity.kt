@@ -38,6 +38,7 @@ import com.my.composeapplication.viewmodel.ComposeLayoutViewModel
 
 /**
  * Created by YourName on 2022/06/30.
+ * TopAppBar, BottomAppBar 테스트 코드
  */
 class ComposeLayoutActivity : ComponentActivity() {
     private val composeLayoutViewModel by viewModels<ComposeLayoutViewModel>()

@@ -33,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 /**
  * Created by YourName on 2022/08/16.
+ * InputField 샘픔 코드
  */
 
 // TODO back key에 대한 focus clear를 구현해야함.

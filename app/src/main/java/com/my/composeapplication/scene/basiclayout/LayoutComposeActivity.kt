@@ -58,6 +58,7 @@ import java.util.*
 
 /**
  * Created by YourName on 2022/08/18.
+ * Bottom Navigation 샘플 코드
  */
 @AndroidEntryPoint
 class LayoutComposeActivity : BaseComponentActivity() {

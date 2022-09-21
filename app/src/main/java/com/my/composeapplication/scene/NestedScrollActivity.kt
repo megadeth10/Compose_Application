@@ -16,6 +16,7 @@ import com.my.composeapplication.base.NestedScrollCompose
 
 /**
  * Created by YourName on 2022/08/19.
+ * NestedScroll 테스트 코드
  */
 class NestedScrollActivity : BaseComponentActivity() {
     override fun getContent() : @Composable () -> Unit = {
