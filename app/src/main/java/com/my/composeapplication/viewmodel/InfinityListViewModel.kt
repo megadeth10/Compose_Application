@@ -21,9 +21,9 @@ import javax.inject.Inject
  * Created by YourName on 2022/08/22.
  */
 @HiltViewModel
-class HealthViewModel @Inject constructor() : ViewModel() {
+class InfinityListViewModel @Inject constructor() : ViewModel() {
     init {
-        Log.e(HealthViewModel::class.simpleName, "init() this: $this")
+        Log.e(InfinityListViewModel::class.simpleName, "init() this: $this")
     }
 
     private var isProgress : Boolean = false
@@ -47,10 +47,10 @@ class HealthViewModel @Inject constructor() : ViewModel() {
     fun setRefresh(newState : Boolean) {
         if (this.isRefreshing.value != newState) {
             viewModelScope.launch {
-                this@HealthViewModel._isRefreshing.emit(newState)
+                this@InfinityListViewModel._isRefreshing.emit(newState)
             }
         }
-        Log.e(HealthViewModel::class.java.simpleName, "onRefresh() value: ${this.isRefreshing.value}")
+        Log.e(InfinityListViewModel::class.java.simpleName, "onRefresh() value: ${this.isRefreshing.value}")
     }
 
     fun setCheck(item : TodoItem, state : Boolean) = _list.find { it.id == item.id }?.let {
@@ -95,11 +95,11 @@ class HealthViewModel @Inject constructor() : ViewModel() {
 
     fun moreList() {
         if (isProgress) {
-            Log.e(HealthViewModel::class.java.simpleName, "moreList() return end")
+            Log.e(InfinityListViewModel::class.java.simpleName, "moreList() return end")
             return
         }
         this.setProgress(true)
-        Log.e(HealthViewModel::class.java.simpleName, "moreList()")
+        Log.e(InfinityListViewModel::class.java.simpleName, "moreList()")
         viewModelScope.launch(Dispatchers.IO) {
             delay(2000)
             withContext(Dispatchers.Main) {
@@ -116,7 +116,7 @@ class HealthViewModel @Inject constructor() : ViewModel() {
     }
 
     private fun appendItem() {
-        Log.e(HealthViewModel::class.java.simpleName, "appendItem()")
+        Log.e(InfinityListViewModel::class.java.simpleName, "appendItem()")
         val currentList = this._list
         currentList.addAll(getInitList(currentList.size))
         this._list = currentList

@@ -9,9 +9,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,17 +49,18 @@ import com.my.composeapplication.scene.CheckTaskActivity
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.data.PagerItem
 import com.my.composeapplication.scene.health.data.TodoItem
-import com.my.composeapplication.viewmodel.HealthViewModel
+import com.my.composeapplication.viewmodel.InfinityListViewModel
 import com.skydoves.landscapist.glide.GlideImage
 import dagger.hilt.android.AndroidEntryPoint
 
 
 /**
  * Created by YourName on 2022/08/22.
+ * list 관련 샘플 Compose(SwipeRefresh, infinity list 등)
  */
 @AndroidEntryPoint
-class HealthActivity : BaseComponentActivity() {
-    private val viewModel by viewModels<HealthViewModel>()
+class InfinityListActivity : BaseComponentActivity() {
+    private val viewModel by viewModels<InfinityListViewModel>()
     override fun getContent(): @Composable () -> Unit = {
         TodoListHoisting()
     }
@@ -73,14 +72,14 @@ class HealthActivity : BaseComponentActivity() {
 }
 
 class TodoListState(
-    val viewModel: HealthViewModel,
+    val viewModel: InfinityListViewModel,
     val allCheckState: MutableState<Boolean>,
     val scrollState: LazyListState
 )
 
 @Composable
 fun rememberTodoListState(
-    viewModel: HealthViewModel = viewModel(
+    viewModel: InfinityListViewModel = viewModel(
         LocalContext.current as BaseComponentActivity
     ),
     allCheckState: MutableState<Boolean> = rememberSaveable {
@@ -126,7 +125,7 @@ private fun TodoListHoisting() {
 
     // TODO 해당 키가 변경될때만 하위 Scope를 실행함. Recomposition되어도 실행되지 않음, 컴포지션이 삭제되면 해당 Scope는 취소됨.
     LaunchedEffect(key1 = true) {
-        Log.e(HealthActivity::class.simpleName, "TodoListHoisting() LaunchedEffect")
+        Log.e(InfinityListActivity::class.simpleName, "TodoListHoisting() LaunchedEffect")
     }
 
     CustomScaffold(
