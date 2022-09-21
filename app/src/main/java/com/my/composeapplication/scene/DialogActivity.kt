@@ -63,7 +63,7 @@ fun DialogMainScreen() {
             .fillMaxSize()
     ) {
         CustomTopAppBar(title = "DialogActivity")
-        DefaultSnackbar(
+        SnackbarWrappingCompose(
             snackbarHostState = viewModel.snackbarState.value,
             onDismiss = viewModel::dismissSnackbar,
             modifier = Modifier.fillMaxSize(),
@@ -125,7 +125,7 @@ fun DialogMainScreen() {
                     onClick = {
                         viewModel.showSnackbar(
                             message = "aaaaa",
-                            duration = SnackbarDuration.Short
+                            duration = SnackbarDuration.Indefinite
                         )
                     }
                 ) {

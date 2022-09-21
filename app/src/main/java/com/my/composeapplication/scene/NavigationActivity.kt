@@ -20,7 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.CustomScaffold
-import com.my.composeapplication.base.DefaultSnackbar
+import com.my.composeapplication.base.SnackbarWrappingCompose
 import com.my.composeapplication.viewmodel.NavigationViewModel
 
 /**
@@ -47,7 +47,7 @@ fun NavScreen(
     val navController = rememberNavController()
 
     CustomScaffold {
-        DefaultSnackbar(
+        SnackbarWrappingCompose(
             modifier = Modifier.fillMaxSize(),
             snackbarHostState = viewModel.snackbarState.value,
             isAdjustResizeMode = viewModel.isAdjustInputMode()

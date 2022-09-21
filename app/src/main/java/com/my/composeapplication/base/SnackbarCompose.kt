@@ -23,13 +23,12 @@ import kotlinx.coroutines.launch
  * Snack Composable
  * 문제점
  * 1. adjustResize가 아닐때, 키보드 노출에 의한 표시 정렬 위치를 해결해야함.
- *  = BaseAlertViewModel의 setInputModel + 키보드 State 값을 설정해 주어서 해결함.
- *  TODO
- *  1. 함수명 변경해야함.
- *  2. Landcape 이고 TopAppBar + Keyboard Show 일때 상단이 짤림
+ *  => BaseAlertViewModel의 setInputModel + 키보드 State 값을 설정해 주어서 해결함.
+ * 2. adjustResize가 아니고 Landcape 이고 TopAppBar + Keyboard Show 일때 상단이 짤림
+ *  => 화면 전체가 밀려 올라가는 거라 정상으로 판단함.
  */
 @Composable
-fun DefaultSnackbar(
+fun SnackbarWrappingCompose(
     snackbarHostState : SnackbarHostState,
     modifier : Modifier = Modifier,
     isAdjustResizeMode : Boolean = false,
@@ -87,6 +86,7 @@ fun DefaultSnackbar(
 //        }
 //    }
 
+// ref : https://stackoverflow.com/questions/68847559/how-can-i-detect-keyboard-opening-and-closing-in-jetpack-compose
     val view = LocalView.current
     DisposableEffect(key1 = snackbarHostState, key2 = view) {
         val listener = ViewTreeObserver.OnGlobalLayoutListener {

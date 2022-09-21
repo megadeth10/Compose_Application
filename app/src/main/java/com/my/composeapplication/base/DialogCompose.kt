@@ -107,7 +107,7 @@ fun DefaultDialog(
                     .clip(RoundedCornerShape(10.dp))
                     .background(Color.White)
             ) {
-                DefaultSnackbar(
+                SnackbarWrappingCompose(
                     snackbarHostState = snackbarHostState,
                     onDismiss = { snackbarHostState.currentSnackbarData?.dismiss() }
                 ) {
