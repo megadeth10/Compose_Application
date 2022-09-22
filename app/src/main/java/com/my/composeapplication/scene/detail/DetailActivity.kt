@@ -272,7 +272,6 @@ fun HeaderPagerComposeHoisting(
     itemPositionMap : MutableMap<Int, Int>
 ) {
     val list = viewModel._horizontalPagerItems
-    val state = rememberPagerState()
     val contentScale = if (
         LocalConfiguration.current.screenWidthDp / LocalConfiguration.current.screenHeightDp < 1.0f
     ) {
@@ -282,7 +281,6 @@ fun HeaderPagerComposeHoisting(
     }
     HeaderPagerCompose(
         list,
-        state,
         contentScale,
         itemPositionMap,
         itemIndex = DetailMenuEnum.Pager.index,
@@ -294,7 +292,6 @@ fun HeaderPagerComposeHoisting(
 @Composable
 fun HeaderPagerCompose(
     list : List<PagerItem>,
-    state : PagerState,
     contentScale : ContentScale,
     itemPositionMap : MutableMap<Int, Int>,
     itemIndex : Int = 0,
@@ -309,18 +306,16 @@ fun HeaderPagerCompose(
             }
             .fillMaxWidth()
             .height(190.dp),
-        listSize = list.size,
-        pagerState = state,
+        list = list,
         autoScroll = autoScroll,
-        indicatorContent = {
+        indicatorContent = { pagerState, item, pageIndex ->
             PagerIndicator(
                 modifier = Modifier
                     .align(Alignment.BottomCenter),
-                pagerState = state
+                pagerState = pagerState
             )
         }
-    ) { interactionSource, pageIndex ->
-        val item = list[pageIndex]
+    ) { interactionSource, item, pageIndex ->
         GlideImage(
             imageModel = item.imageUrl,
             modifier = Modifier

@@ -2,7 +2,6 @@ package com.my.composeapplication.base
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
@@ -14,16 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.pager.*
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import com.my.composeapplication.scene.health.data.PagerItem
 import kotlinx.coroutines.*
 
 /**
@@ -46,6 +40,7 @@ fun startPagerTimer(
 ) : Job? {
     if (autoScroll && size > 1) {
         return coroutineScope.launch(Dispatchers.Default) {
+//            Log.e("PagerCompose", "startPagerTimer() start")
             try {
                 expiredTimer {
                     coroutineScope.launch(Dispatchers.Main) {
@@ -103,36 +98,56 @@ private fun nextPager(
 
 /**
  * ended roll pager
+ * @param pagerContent : interactionSource는 하위 Compose에
+ * Modifier.clickable(interactionSource = interactionSource,
+ * indication = null) 로 연결해 줘서 클릭 down/up시에 타이머를 체크 할수 있도록 한다.
  */
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun HorizontalPagerCompose(
+fun <T> HorizontalPagerCompose(
     modifier : Modifier = Modifier,
-    listSize : Int,
-    pagerState : PagerState,
+    initialPage : Int = 0,
+    list : List<T>,
     autoScroll : Boolean = false,
-
-    indicatorContent : @Composable BoxScope.() -> Unit,
-    pagerContent : @Composable (
+    isInfinity : Boolean = false,
+    indicatorContent : @Composable BoxScope.(
+        pageState : PagerState,
+        item : T,
+        pageIndex : Int
+    ) -> Unit,
+    pagerContent : @Composable PagerScope.(
         interactionSource : MutableInteractionSource,
+        item : T,
         pageIndex : Int
     ) -> Unit,
 ) {
+    val realPageCount = list.size
+    var pagerState = rememberPagerState(initialPage)
+    var maxSize = realPageCount
+    var startIndex = 0
     var job : Job? by remember {
         mutableStateOf(null)
     }
     val coroutineScope = rememberCoroutineScope()
     val interactionSource = remember { MutableInteractionSource() }
-    LaunchedEffect(key1 = pagerState.currentPage) {
+
+    if (isInfinity) {
+        pagerState = rememberInfinityPagerState(initialPage)
+        maxSize = MaxIndex
+        startIndex = maxSize / 2
+    }
+
+    LaunchedEffect(key1 = pagerState.currentPage, key2 = list.size) {
+
         job?.cancel()
         job = startPagerTimer(
             coroutineScope = coroutineScope,
-            size = listSize,
+            size = realPageCount,
             autoScroll = autoScroll,
             pagerState = pagerState,
         )
     }
-    LaunchedEffect(interactionSource) {
+    LaunchedEffect(key1 = interactionSource, key2 = list.size) {
         interactionSource.interactions.collect { interaction ->
             when (interaction) {
                 is PressInteraction.Press -> {
@@ -144,7 +159,7 @@ fun HorizontalPagerCompose(
 //                    Log.e("LEE", "HeaderPagerCompose() PressInteraction.Cancel")
                     job = startPagerTimer(
                         coroutineScope = coroutineScope,
-                        size = listSize,
+                        size = realPageCount,
                         autoScroll = autoScroll,
                         pagerState = pagerState,
                     )
@@ -158,19 +173,46 @@ fun HorizontalPagerCompose(
     ) {
         HorizontalPager(
             modifier = Modifier
-                .fillMaxSize(),
-            count = listSize,
+                .fillMaxSize()
+                .placeholder(
+                    visible = list.isEmpty(),
+                    color = Color.Gray,
+                    shape = RectangleShape,
+                    highlight = PlaceholderHighlight.shimmer(Color.White)
+                ),
+            count = maxSize,
             state = pagerState,
         ) { pagerIndex ->
-            pagerContent(interactionSource, pagerIndex)
+            if (realPageCount > 1) {
+                var realIndex = getRealIndex(
+                    pagerIndex = pagerIndex,
+                    listSize = realPageCount,
+                    startIndex = startIndex,
+                    isInfinity = isInfinity
+                )
+                realIndex = if (list.size > realIndex) realIndex else 0
+                val item = list[realIndex]
+                pagerContent(interactionSource, item, realIndex)
+            }
         }
-        if (listSize > 1) {
-            indicatorContent()
+        if (realPageCount > 1) {
+            val realIndex = getRealIndex(
+                pagerIndex = pagerState.currentPage,
+                listSize = realPageCount,
+                startIndex = startIndex,
+                isInfinity = isInfinity
+            )
+            indicatorContent(
+                pageState = pagerState,
+                item = list[realIndex],
+                pageIndex = realIndex
+            )
         }
     }
 
     DisposableEffect(key1 = true) {
         onDispose {
+//            Log.e("LEE", "HorizontalPagerCompose() DisposableEffect")
             job?.cancel()
             job = null
         }
@@ -178,41 +220,17 @@ fun HorizontalPagerCompose(
 }
 
 /**
- * endless roll pager
+ * 실제 아이템 Index 계산하는 함수
  */
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-fun <T> InfinityHorizontalPager(
-    modifier : Modifier = Modifier,
-    list : List<T>,
-    pagerState : PagerState,
-    content : @Composable (Modifier, T, Int) -> Unit
-) {
-    // Display 10 items
-    val pageCount = list.size
-    val maxSize = MaxIndex
-    val startIndex = maxSize / 2
-    HorizontalPager(
-        // Set the raw page count to a really large number
-        count = maxSize,
-        state = pagerState,
-        modifier = modifier
-            .fillMaxWidth()
-            .placeholder(
-                visible = list.isEmpty(),
-                color = Color.Gray,
-                shape = RectangleShape,
-                highlight = PlaceholderHighlight.shimmer(Color.White)
-            )
-    ) { index ->
-        // We calculate the page from the given index
-        var page = (index - startIndex).floorMod(pageCount)
-        page = if (list.size > page) page else 0
-        if (list.size > page) {
-            val item = list[page]
-            content(Modifier.fillMaxSize(), item, page)
-        }
-    }
+private fun getRealIndex(
+    pagerIndex : Int,
+    listSize : Int,
+    startIndex : Int,
+    isInfinity : Boolean
+) = if (isInfinity) {
+    (pagerIndex - startIndex).floorMod(listSize)
+} else {
+    pagerIndex
 }
 
 /**

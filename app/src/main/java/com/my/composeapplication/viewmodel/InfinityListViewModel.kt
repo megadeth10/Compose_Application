@@ -1,7 +1,6 @@
 package com.my.composeapplication.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,16 +32,16 @@ class InfinityListViewModel @Inject constructor() : ViewModel() {
     private var _isRefreshing : MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isRefreshing : StateFlow<Boolean> get() = _isRefreshing.asStateFlow()
 
-    private var _horizontalPagerItems = mutableStateListOf<PagerItem>()
-    val horizontalPagerItems: List<PagerItem> get() = _horizontalPagerItems
+    private var _horizontalPagerItems = ArrayList<PagerItem>(arrayListOf())
+    val horizontalPagerItems : ArrayList<PagerItem> get() = _horizontalPagerItems
 
     private val saveStataParams = hashMapOf<String, Any>()
 
-    fun saveStateParam(key:String, param:Any) {
+    fun saveStateParam(key : String, param : Any) {
         this.saveStataParams[key] = param
     }
 
-    fun restoreStateParam(key:String) = this.saveStataParams.remove(key)
+    fun restoreStateParam(key : String) = this.saveStataParams.remove(key)
 
     fun setRefresh(newState : Boolean) {
         if (this.isRefreshing.value != newState) {
@@ -88,9 +87,16 @@ class InfinityListViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    var random = false
     private fun setPagerItem() {
-        val currentItem = this._horizontalPagerItems
-        currentItem.addAll(getInitPager())
+        if (random) {
+            this._horizontalPagerItems = getInitPager()
+            random = false
+        } else {
+            this._horizontalPagerItems = getInitPager2()
+            random = true
+        }
+
     }
 
     fun moreList() {
@@ -136,16 +142,26 @@ class InfinityListViewModel @Inject constructor() : ViewModel() {
 }
 
 private fun getInitList(startIndex : Int = 0) = List(20) { i ->
-    val id =  i + startIndex
+    val id = i + startIndex
     val title = "Todo Item ${i + startIndex}"
     val description = "$id\n$title              \n$title            \n$title "
     TodoItem(id, title, description)
 }
-private fun getInitPager() = listOf<PagerItem>(
+
+private fun getInitPager() : ArrayList<PagerItem> = arrayListOf<PagerItem>(
     PagerItem("https://cdn.pixabay.com/photo/2020/07/14/16/18/snow-5404785_960_720.jpg", " 산이다."),
     PagerItem("https://cdn.pixabay.com/photo/2022/08/19/10/35/scooter-7396608_960_720.jpg", " 스쿠터 자전거"),
     PagerItem("https://cdn.pixabay.com/photo/2022/08/17/20/42/hot-air-balloon-7393437_960_720.jpg", " 열기구 카파도피아"),
     PagerItem("https://cdn.pixabay.com/photo/2022/07/30/04/46/sunrise-7353034_960_720.jpg", " 바다 석양"),
     PagerItem("https://cdn.pixabay.com/photo/2022/07/30/14/35/sunflowers-7353922_960_720.jpg", " 해바라기"),
     PagerItem("https://cdn.pixabay.com/photo/2022/08/18/11/29/wind-energy-7394705_960_720.jpg", " 풍력 발전기"),
+)
+
+private fun getInitPager2(): ArrayList<PagerItem> = arrayListOf<PagerItem>(
+    PagerItem("https://cdn.pixabay.com/photo/2022/03/01/09/35/iceland-poppy-7040946_960_720.jpg", " 양귀비"),
+    PagerItem("https://cdn.pixabay.com/photo/2013/07/21/13/00/rose-165819_960_720.jpg", " 장미"),
+    PagerItem("https://cdn.pixabay.com/photo/2014/04/14/20/11/pink-324175_960_720.jpg", "벗꽃"),
+    PagerItem("https://cdn.pixabay.com/photo/2015/10/09/00/55/lotus-978659_960_720.jpg", " 연꽃"),
+    PagerItem("https://cdn.pixabay.com/photo/2014/02/27/16/10/flowers-276014_960_720.jpg", " 야생화"),
+//    PagerItem("https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510_960_720.jpg", " 데이지"),
 )
