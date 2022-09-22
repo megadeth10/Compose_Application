@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
@@ -13,12 +12,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.*
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import kotlinx.coroutines.*
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 /**
  * Created by YourName on 2022/09/14.
@@ -26,7 +29,8 @@ import kotlinx.coroutines.*
  */
 
 private const val MaxIndex = Int.MAX_VALUE
-
+private val DotPadding = 2.dp
+private val IndicatorWidth = 8.dp
 /**
  * pager Timer 시작 함수
  */
@@ -251,15 +255,25 @@ fun Int.floorMod(other : Int) : Int = when (other) {
 /**
  * Infinity Pager Indicator
  */
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun DotsIndicator(
     modifier : Modifier = Modifier,
+    pagerState : PagerState,
     totalDots : Int,
     selectedIndex : Int,
     selectedColor : Color = Color.White,
     unSelectedColor : Color = Color.Gray,
+    pageIndexMapping: (Int) -> Int = { it },
 ) {
-    LazyRow(
+    val indicatorWidthPx = LocalDensity.current.run {
+        (IndicatorWidth + (DotPadding * 2)).roundToPx() + 1
+    }
+    Log.e("LEE" ,"indicatorWidthPx $indicatorWidthPx")
+    val dotModifier = Modifier.padding(horizontal = DotPadding)
+        .size(IndicatorWidth)
+        .clip(CircleShape)
+    Box(
         modifier = modifier
             .wrapContentWidth()
             .wrapContentHeight()
@@ -270,22 +284,28 @@ fun DotsIndicator(
                 horizontal = 5.dp
             )
     ) {
-        items(totalDots) { index ->
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (index == selectedIndex) {
-                            selectedColor
-                        } else {
-                            unSelectedColor
-                        }
-                    )
-            )
-            if (index != totalDots - 1) {
-                Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+        Row {
+            repeat(totalDots) { index ->
+                Box(modifier = dotModifier.background(unSelectedColor))
             }
+        }
+        Box(
+            modifier = Modifier
+                .offset {
+                    val position = pageIndexMapping(selectedIndex)
+                    val offset = pagerState.currentPageOffset
+                    val next = pageIndexMapping(selectedIndex + offset.sign.toInt())
+                    val scrollPosition = ((next - position) * offset.absoluteValue + position)
+                        .coerceIn(0f, (totalDots - 1).coerceAtLeast(0).toFloat())
+                    val xOffset = (indicatorWidthPx * scrollPosition).toInt()
+//                    Log.e("LEE" ,"scrollPosition $scrollPosition $xOffset")
+                    IntOffset(
+                        x = xOffset,
+                        y = 0
+                    )
+                }
+        ) {
+            Box(modifier = dotModifier.background(selectedColor))
         }
     }
 }

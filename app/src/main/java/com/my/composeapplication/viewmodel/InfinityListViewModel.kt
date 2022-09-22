@@ -163,5 +163,5 @@ private fun getInitPager2(): ArrayList<PagerItem> = arrayListOf<PagerItem>(
     PagerItem("https://cdn.pixabay.com/photo/2014/04/14/20/11/pink-324175_960_720.jpg", "벗꽃"),
     PagerItem("https://cdn.pixabay.com/photo/2015/10/09/00/55/lotus-978659_960_720.jpg", " 연꽃"),
     PagerItem("https://cdn.pixabay.com/photo/2014/02/27/16/10/flowers-276014_960_720.jpg", " 야생화"),
-//    PagerItem("https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510_960_720.jpg", " 데이지"),
+    PagerItem("https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510_960_720.jpg", " 데이지"),
 )

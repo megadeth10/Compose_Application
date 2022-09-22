@@ -206,7 +206,7 @@ fun InfinityHorizontalPager(
             .fillMaxWidth()
             .height(170.dp),
         list = list,
-        autoScroll = true,
+        isInfinity = true,
         indicatorContent = { pagerState, item, index ->
 //            Log.e("LEE", "InfinityHorizontalPager() pageIndex: ${pagerState.currentPage} index: $index")
             if (item.title.isNotEmpty()) {
@@ -221,6 +221,7 @@ fun InfinityHorizontalPager(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(5.dp),
+                    pagerState = pagerState,
                     totalDots = list.size,
                     selectedIndex = index
                 )
