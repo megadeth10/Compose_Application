@@ -28,8 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.my.composeapplication.R
+import com.my.composeapplication.base.CustomTopAppBar
 import com.my.composeapplication.base.NestedScrollCompose
-import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

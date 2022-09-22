@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.CustomScaffold
-import com.my.composeapplication.scene.bmi.CustomTopAppBar
+import com.my.composeapplication.base.CustomTopAppBar
 import com.my.composeapplication.scene.health.InfinityListActivity
 
 /**

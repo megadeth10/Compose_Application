@@ -28,7 +28,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.my.composeapplication.R
 import com.my.composeapplication.base.*
-import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.PagerIndicator
 import com.my.composeapplication.scene.health.data.PagerItem
 import com.my.composeapplication.viewmodel.DetailViewModel

@@ -36,7 +36,7 @@ import com.bumptech.glide.request.target.Target
 import com.my.composeapplication.R
 import com.my.composeapplication.base.BaseComponentActivity
 import com.my.composeapplication.base.CustomScaffold
-import com.my.composeapplication.scene.bmi.CustomTopAppBar
+import com.my.composeapplication.base.CustomTopAppBar
 import com.my.composeapplication.viewmodel.PinchZoomViewModel
 import com.skydoves.landscapist.glide.GlideImage
 import dagger.hilt.android.AndroidEntryPoint

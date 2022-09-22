@@ -28,7 +28,6 @@ import com.my.composeapplication.base.data.ChoiceDialogState
 import com.my.composeapplication.base.data.DialogState
 import com.my.composeapplication.base.data.DropDownMenuState
 import com.my.composeapplication.base.data.PopupState
-import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.viewmodel.DialogViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

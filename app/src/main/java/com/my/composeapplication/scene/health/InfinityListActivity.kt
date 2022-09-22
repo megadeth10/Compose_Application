@@ -47,7 +47,6 @@ import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.CheckTaskActivity
-import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.scene.health.data.PagerItem
 import com.my.composeapplication.scene.health.data.TodoItem
 import com.my.composeapplication.viewmodel.InfinityListViewModel

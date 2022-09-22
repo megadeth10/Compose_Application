@@ -29,9 +29,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.my.composeapplication.base.BaseComponentActivity
-import com.my.composeapplication.scene.bmi.CustomTopAppBar
 import com.my.composeapplication.viewmodel.ImageTestViewModel
 import com.my.composeapplication.R
+import com.my.composeapplication.base.CustomTopAppBar
 import com.skydoves.landscapist.glide.GlideImage
 import dagger.hilt.android.AndroidEntryPoint
 
