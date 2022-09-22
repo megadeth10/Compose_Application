@@ -5,7 +5,6 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.Text
@@ -27,8 +26,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.rememberPagerState
 import com.my.composeapplication.R
 import com.my.composeapplication.base.*
 import com.my.composeapplication.scene.bmi.CustomTopAppBar
@@ -271,7 +268,7 @@ fun HeaderPagerComposeHoisting(
     viewModel : DetailViewModel = viewModel(LocalContext.current as BaseComponentActivity),
     itemPositionMap : MutableMap<Int, Int>
 ) {
-    val list = viewModel._horizontalPagerItems
+    val list = viewModel.horizontalPagerItems
     val contentScale = if (
         LocalConfiguration.current.screenWidthDp / LocalConfiguration.current.screenHeightDp < 1.0f
     ) {
@@ -332,19 +329,40 @@ fun HeaderPagerCompose(
 fun FirstMenu(
     itemPositionMap : MutableMap<Int, Int>,
     menuItem : DetailMenuEnum,
+    viewModel:DetailViewModel = viewModel(LocalContext.current as BaseComponentActivity)
 ) {
-    Text(
-        text = menuItem.title,
+    val itemSize = viewModel.item.collectAsState()
+    Column(
         modifier = Modifier
-            .onGloballyPositioned {
-                if (it.isAttached) {
-                    itemPositionMap[menuItem.index] = it.size.height
+    ) {
+        Text(
+            text = menuItem.title,
+            modifier = Modifier
+                .onGloballyPositioned {
+                    if (it.isAttached) {
+                        itemPositionMap[menuItem.index] = it.size.height
+                    }
                 }
+                .fillMaxWidth()
+                .border(1.dp, Color.Black)
+                .height(50.dp)
+
+        )
+//        LazyColumn(
+//        ) {
+//            items(20) {
+              repeat(itemSize.value) {
+                  Text(
+                      text = menuItem.title + it,
+                      modifier = Modifier
+                          .fillMaxWidth()
+                          .border(1.dp, Color.Black)
+                          .height(50.dp)
+                  )
+              }
             }
-            .fillMaxWidth()
-            .height(500.dp)
-            .border(1.dp, Color.Black)
-    )
+//        }
+//    }
 }
 
 @Composable

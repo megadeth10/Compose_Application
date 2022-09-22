@@ -20,7 +20,10 @@ class DetailViewModel @Inject constructor(): BaseAlertViewModel() {
     private var _isRefreshing : MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isRefreshing : StateFlow<Boolean> get() = _isRefreshing.asStateFlow()
 
-    val _horizontalPagerItems = listOf<PagerItem>(
+    private var _item : MutableStateFlow<Int> = MutableStateFlow(0)
+    val item : StateFlow<Int> get() = _item.asStateFlow()
+
+    val horizontalPagerItems = listOf<PagerItem>(
         PagerItem("https://cdn.pixabay.com/photo/2020/07/14/16/18/snow-5404785_960_720.jpg", " 산이다."),
         PagerItem("https://cdn.pixabay.com/photo/2022/08/19/10/35/scooter-7396608_960_720.jpg", " 스쿠터 자전거"),
         PagerItem("https://cdn.pixabay.com/photo/2022/08/17/20/42/hot-air-balloon-7393437_960_720.jpg", " 열기구 카파도피아"),
@@ -29,7 +32,7 @@ class DetailViewModel @Inject constructor(): BaseAlertViewModel() {
         PagerItem("https://cdn.pixabay.com/photo/2022/08/18/11/29/wind-energy-7394705_960_720.jpg", " 풍력 발전기"),
     )
 
-    fun setRefresh(newState : Boolean) {
+    private fun setRefresh(newState : Boolean) {
         if (this.isRefreshing.value != newState) {
             viewModelScope.launch {
                 this@DetailViewModel._isRefreshing.emit(newState)
@@ -42,9 +45,25 @@ class DetailViewModel @Inject constructor(): BaseAlertViewModel() {
         if (this.isRefreshing.value) {
             return
         }
+        Log.e(InfinityListViewModel::class.java.simpleName, "onRefresh()")
         this.setRefresh(true)
         waitJob = viewModelScope.launch(Dispatchers.IO) {
-            refreshWaiting()
+            launch {
+                refreshWaiting()
+            }
+            launch {
+                resetList()
+            }
+        }
+    }
+    private suspend fun resetList() {
+        withContext(Dispatchers.Main) {
+            _item.emit(0)
+        }
+        delay(3000)
+        withContext(Dispatchers.Main) {
+            _item.emit(20)
+            Log.e(InfinityListViewModel::class.java.simpleName, "resetList() end")
         }
     }
 
@@ -53,6 +72,7 @@ class DetailViewModel @Inject constructor(): BaseAlertViewModel() {
         withContext(Dispatchers.Main) {
             this@DetailViewModel.setRefresh(false)
             waitJob = null
+            Log.e(InfinityListViewModel::class.java.simpleName, "refreshWaiting() end")
         }
     }
 
