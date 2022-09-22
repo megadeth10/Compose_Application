@@ -12,10 +12,12 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -39,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshIndicator
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.my.composeapplication.ui.theme.PurpleGrey80
 import com.my.composeapplication.ui.theme.RED_POINT
 import kotlinx.coroutines.*
 import kotlin.math.abs
@@ -433,5 +436,43 @@ fun SwipeRefreshCompose(
     ) {
         content()
     }
+}
+
+/**
+ * TopAppBar
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomTopAppBar(
+    modifier : Modifier = Modifier,
+    title : String,
+    showBack : Boolean = false,
+    actions : @Composable RowScope.() -> Unit = {},
+    onBack : (() -> Unit)? = null,
+) {
+    SmallTopAppBar(
+        modifier = modifier.wrapContentSize(align = Alignment.Center),
+        title = {
+            Text(title)
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = PurpleGrey80),
+        navigationIcon = {
+            if (showBack) {
+                Box(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clickable {
+                                onBack?.invoke()
+                            }
+                            .width(30.dp)
+                            .height(30.dp)
+                    )
+                }
+            }
+        },
+        actions = actions
+    )
 }
 

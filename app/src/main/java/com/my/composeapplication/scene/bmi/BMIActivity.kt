@@ -213,41 +213,6 @@ private fun validation(height : String, weight : String) : Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomTopAppBar(
-    modifier : Modifier = Modifier,
-    title : String,
-    showBack : Boolean = false,
-    actions : @Composable RowScope.() -> Unit = {},
-    onBack : (() -> Unit)? = null,
-) {
-    SmallTopAppBar(
-        modifier = modifier.wrapContentSize(align = Alignment.Center),
-        title = {
-            Text(title)
-        },
-        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = PurpleGrey80),
-        navigationIcon = {
-            if (showBack) {
-                Box(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clickable {
-                                onBack?.invoke()
-                            }
-                            .width(30.dp)
-                            .height(30.dp)
-                    )
-                }
-            }
-        },
-        actions = actions
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 fun InputField(
     value : String,
     setState : (String) -> Unit,
