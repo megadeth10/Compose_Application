@@ -2,16 +2,13 @@ package com.my.composeapplication.viewmodel
 
 import android.util.Log
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.my.composeapplication.base.BaseNetworkViewModel
 import com.my.composeapplication.scene.health.data.PagerItem
 import com.my.composeapplication.scene.health.data.TodoItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -20,37 +17,16 @@ import javax.inject.Inject
  * Created by YourName on 2022/08/22.
  */
 @HiltViewModel
-class InfinityListViewModel @Inject constructor() : ViewModel() {
+class InfinityListViewModel @Inject constructor() : BaseNetworkViewModel() {
     init {
         Log.e(InfinityListViewModel::class.simpleName, "init() this: $this")
     }
 
-    private var isProgress : Boolean = false
     private var _list : SnapshotStateList<TodoItem> = SnapshotStateList()
     val list : List<TodoItem> get() = _list
 
-    private var _isRefreshing : MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val isRefreshing : StateFlow<Boolean> get() = _isRefreshing.asStateFlow()
-
     private var _horizontalPagerItems = ArrayList<PagerItem>(arrayListOf())
     val horizontalPagerItems : ArrayList<PagerItem> get() = _horizontalPagerItems
-
-    private val saveStataParams = hashMapOf<String, Any>()
-
-    fun saveStateParam(key : String, param : Any) {
-        this.saveStataParams[key] = param
-    }
-
-    fun restoreStateParam(key : String) = this.saveStataParams.remove(key)
-
-    fun setRefresh(newState : Boolean) {
-        if (this.isRefreshing.value != newState) {
-            viewModelScope.launch {
-                this@InfinityListViewModel._isRefreshing.emit(newState)
-            }
-        }
-        Log.e(InfinityListViewModel::class.java.simpleName, "onRefresh() value: ${this.isRefreshing.value}")
-    }
 
     fun setCheck(item : TodoItem, state : Boolean) = _list.find { it.id == item.id }?.let {
         it.isChecked = state
@@ -81,12 +57,6 @@ class InfinityListViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun setProgress(newState : Boolean) {
-        if (isProgress != newState) {
-            isProgress = newState
-        }
-    }
-
     var random = false
     private fun setPagerItem() {
         if (random) {
@@ -100,7 +70,7 @@ class InfinityListViewModel @Inject constructor() : ViewModel() {
     }
 
     fun moreList() {
-        if (isProgress) {
+        if (isProgress.value) {
             Log.e(InfinityListViewModel::class.java.simpleName, "moreList() return end")
             return
         }
@@ -130,7 +100,7 @@ class InfinityListViewModel @Inject constructor() : ViewModel() {
         this.setRefresh(false)
     }
 
-    fun onRefresh() {
+    override fun onRefresh() {
         if (this.isRefreshing.value) {
             return
         }
