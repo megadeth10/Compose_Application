@@ -137,7 +137,7 @@ fun DetailScreen(
             },
             foldingAnimation = true
         ) { paddingValue, setOffset ->
-            ScrollTopButtonCompose(lazyListState, setOffset) {
+            LazyListScrollTopButtonCompose(lazyListState, setOffset) {
                 LazyColumn(
                     state = lazyListState,
                     contentPadding = PaddingValues(top = paddingValue),
@@ -280,7 +280,6 @@ fun HeaderPagerComposeHoisting(
         contentScale,
         itemPositionMap,
         itemIndex = DetailMenuEnum.Pager.index,
-        autoScroll = true
     )
 }
 

@@ -10,6 +10,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -218,7 +219,7 @@ fun LazyListState.OnEndItem(
  */
 @Composable
 fun NestedScrollCompose(
-    initOffset: Float = 0f,
+    initOffset : Float = 0f,
     toolbarHeight : Dp = 48.dp,
     topAppbar : @Composable (height : Dp, offsetHeightPx : Int) -> Unit,
     fixedContainer : @Composable() ((height : Dp, offsetHeightPx : Int) -> Unit)? = null,
@@ -274,15 +275,112 @@ fun NestedScrollCompose(
 }
 
 /**
- * Scroll Top Button Compose
+ * ScrollView Top Button Compose
+ * @param setToolbarOffset NetstedScroll을 사용할경우 title toolbar scroll 설정을 위함.
+ */
+@Composable
+fun ScrollTopButtonCompose(
+    scrollState : ScrollState,
+    setToolbarOffset : ((Float) -> Unit)? = null,
+    initVisible : Boolean = false,
+    content : @Composable () -> Unit
+) {
+    val screenHeightPx = LocalDensity.current.run {
+        LocalConfiguration.current.screenHeightDp.dp.roundToPx()
+    }
+    var buttonVisible by rememberSaveable {
+        mutableStateOf(initVisible)
+    }
+    var job : Job? by remember {
+        mutableStateOf(null)
+    }
+    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(key1 = scrollState) {
+        snapshotFlow { scrollState.value }
+            .collect {
+                job?.cancel()
+                val currentVisible = buttonVisible
+                job = coroutineScope.launch(Dispatchers.Default) {
+                    try {
+                        val newVisible = it > screenHeightPx.toInt()
+                        withContext(Dispatchers.Main) {
+                            if (currentVisible != newVisible) {
+//                            Log.e("CustomCompose", "ScrollTopButtonCompose() newVisible:$newVisible")
+                                buttonVisible = newVisible
+                            }
+                        }
+                    } catch (ex : CancellationException) {
+//                    Log.e("CustomCompose", "ScrollTopButtonCompose() cancel")
+                    }
+                }
+            }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        content()
+        TopButtonCompose(
+            buttonVisible = buttonVisible,
+            onClick = {
+                coroutineScope.launch {
+                    setToolbarOffset?.invoke(0f)
+//                        scrollState.animateScrollToItem(0)
+                    scrollState.scrollTo(0)
+                }
+            }
+        )
+    }
+
+    DisposableEffect(key1 = true) {
+        onDispose {
+            job?.cancel()
+        }
+    }
+}
+
+@Composable
+private fun TopButtonCompose(
+    buttonVisible : Boolean,
+    onClick : () -> Unit,
+) {
+    val density = LocalDensity.current
+    AnimatedVisibility(visible = buttonVisible,
+        enter = slideInVertically {
+            with(density) {
+                40.dp.roundToPx()
+            }
+        },
+        exit = slideOutVertically {
+            with(density) {
+                40.dp.roundToPx()
+            }
+        }
+    ) {
+        IconButton(
+            modifier = Modifier
+                .offset(y = (-10).dp)
+                .border(1.dp, Color.Black, CircleShape)
+                .size(30.dp),
+            onClick = onClick
+        ) {
+            Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = null)
+        }
+    }
+}
+
+/**
+ * LazyList Top Button Compose
  * @param setToolbarOffset NetstedScroll을 사용할경우 title toolbar scroll 설정을 위함.
  * TODO: content의 LazyColumn의 아이템이 하나일때만 가능하다 scroll의 offset전체를 알방법이 필요하다.
  */
 @Composable
-fun ScrollTopButtonCompose(
+fun LazyListScrollTopButtonCompose(
     scrollState : LazyListState,
     setToolbarOffset : ((Float) -> Unit)? = null,
-    initVisible: Boolean = false,
+    initVisible : Boolean = false,
     content : @Composable () -> Unit
 ) {
     val density = LocalDensity.current
@@ -299,33 +397,34 @@ fun ScrollTopButtonCompose(
         mutableStateOf(null)
     }
     val coroutineScope = rememberCoroutineScope()
-    val showButton by remember {
-        derivedStateOf {
+    LaunchedEffect(key1 = scrollState) {
+        snapshotFlow {
             val firstOffset = scrollState.firstVisibleItemScrollOffset
             val firstIndex = scrollState.firstVisibleItemIndex
             scrollOffsetMap[firstIndex] = firstOffset
-//            Log.e("CustomCompose", "ScrollTopButtonCompose() firstIndex:$firstIndex")
-            job?.cancel()
-            val currentVisible = buttonVisible
-            job = coroutineScope.launch(Dispatchers.Default) {
-                try {
-                    val newVisible = checkValue(
-                        firstIndex = firstIndex,
-                        targetOffset = screenHeightPx.toInt(),
-                        dataMap = scrollOffsetMap,
-                    )
-                    withContext(Dispatchers.Main) {
-                        if (currentVisible != newVisible) {
-//                            Log.e("CustomCompose", "ScrollTopButtonCompose() newVisible:$newVisible")
-                            buttonVisible = newVisible
+            Pair(firstIndex, firstOffset)
+        }
+            .collect { pair ->
+                job?.cancel()
+                val currentVisible = buttonVisible
+                job = coroutineScope.launch(Dispatchers.Default) {
+                    try {
+                        val newVisible = checkValue(
+                            firstIndex = pair.first,
+                            targetOffset = screenHeightPx.toInt(),
+                            dataMap = scrollOffsetMap,
+                        )
+                        withContext(Dispatchers.Main) {
+                            if (currentVisible != newVisible) {
+//                            Log.e("CustomCompose", "LazyListScrollTopButtonCompose() newVisible:$newVisible")
+                                buttonVisible = newVisible
+                            }
                         }
+                    } catch (ex : CancellationException) {
+//                    Log.e("CustomCompose", "LazyListScrollTopButtonCompose() cancel")
                     }
-                } catch (ex : CancellationException) {
-//                    Log.e("CustomCompose", "ScrollTopButtonCompose() cancel")
                 }
             }
-            false
-        }
     }
 
     Box(
@@ -334,34 +433,16 @@ fun ScrollTopButtonCompose(
         contentAlignment = Alignment.BottomCenter
     ) {
         content()
-        AnimatedVisibility(visible = showButton || buttonVisible,
-            enter = slideInVertically {
-                with(density) {
-                    40.dp.roundToPx()
-                }
-            },
-            exit = slideOutVertically {
-                with(density) {
-                    40.dp.roundToPx()
-                }
-            }
-        ) {
-            IconButton(
-                modifier = Modifier
-                    .offset(y = (-10).dp)
-                    .border(1.dp, Color.Black, CircleShape)
-                    .size(30.dp),
-                onClick = {
-                    coroutineScope.launch {
-                        setToolbarOffset?.invoke(0f)
+        TopButtonCompose(
+            buttonVisible = buttonVisible,
+            onClick = {
+                coroutineScope.launch {
+                    setToolbarOffset?.invoke(0f)
 //                        scrollState.animateScrollToItem(0)
-                        scrollState.scrollToItem(0)
-                    }
+                    scrollState.scrollToItem(0)
                 }
-            ) {
-                Icon(imageVector = Icons.Default.ArrowUpward, contentDescription = null)
             }
-        }
+        )
     }
 
     DisposableEffect(key1 = true) {

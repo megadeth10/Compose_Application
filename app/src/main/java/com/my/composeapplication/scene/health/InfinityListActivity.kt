@@ -154,7 +154,7 @@ private fun TodoListHoisting() {
     ) {
         Box(modifier = Modifier.padding(it)) {
             SwipeRefreshViewHoisting(todoListState) {
-                ScrollTopButtonCompose(
+                LazyListScrollTopButtonCompose(
                     scrollState = todoListState.scrollState,
                 ) {
                     TodoList(
